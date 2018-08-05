@@ -1,0 +1,120 @@
+<!--- ->
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/src/app-forms/form-contact-details.html">
+
+<!--- ->
+<link rel="import" href="/src/custom-libraries/moment-js.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+
+<!--- ->
+Demos
+https://gridbyexample.com/patterns/header-asmany-footer/
+https://codepen.io/rachelandrew/pen/zwPEoX
+<!---->
+
+<dom-module id="view-contacts-detail">
+
+  <template>
+    <!---->
+    <style>
+      :host {
+        --line-color: #DDDDDD;
+        /** /
+        border-left: 1px var(--line-color) solid;
+        /**/
+      }
+
+      div {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+    <!---->
+
+    <!---->
+		<!--- ->
+    hello world
+    <!---->
+
+    <div role="listbox">
+    <!-- wrap app-items in <div role="listbox"></div> to prevent spaces between items -->
+
+      <!--- ->
+      <app-item type="subheader"
+                label="Contact detail"
+                >
+      </app-item>
+      <!---->
+
+      <form-contact-details item="[[item]]"></form-contact-details>
+      
+    </div>
+    <!---->
+    
+    
+  </template>
+
+  <script>
+
+    class ViewContactsDetail extends Polymer.Element {
+
+      static get is() { return 'view-contacts-detail'; }
+
+      static get properties() { return {
+
+      // 	mediaWidth: {
+      // 		type: Number, // 0, 1, 2, 3
+      // 		notify: true,
+      // 		//observer: '_mediaWidthChanged',
+      // 	},
+      
+        item: {
+          type: Object,
+          notify: true,
+        },
+      
+      }}
+     	
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+      }
+      
+			_computeTimeAgo(n) {
+				// console.log('item', item);
+        // console.log('n', n);
+        // console.log('typeof-n', typeof n);
+        
+        // const t = item.timestamp;
+        
+        const ready1 = !!n;
+        const ready2 = (typeof n == 'number');
+        const ready = ready1 && ready2;
+        if(!ready) return '';
+
+				const s = moment(n).fromNow(); // http://momentjs.com/docs/#/displaying/fromnow/
+				return s;
+			}
+		
+    }
+
+    customElements.define(ViewContactsDetail.is, ViewContactsDetail);
+
+  </script>
+
+</dom-module>

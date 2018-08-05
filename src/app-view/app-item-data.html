@@ -1,0 +1,80 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="app-item-data">
+  <template>
+    <style>
+      .dim {
+        opacity: var(--opacity-dim);
+      }
+    </style>
+    
+    <!---->
+    <paper-icon-button class="dim"
+                       icon="chevron-right"
+                       hidden$="[[_computeDataExists(data)]]"
+                       >
+    </paper-icon-button>
+
+    <div hidden$="[[!_computeDataExists(data)]]">[[data]]</div>
+    <!--- ->
+    <div>[[dataString]]</div>
+    <!---->
+     
+  </template>
+
+  <script>
+    //class AppItem extends AppListMixin(Polymer.Element) {
+    class AppItemData extends Polymer.Element {
+      static get is() { return 'app-item-data'; }
+
+      static get properties() { return {
+
+				data: { // right side
+					type: Object,
+					notify: true,
+					// observer: '_dataChanged',
+          // value: () => 'vaadin:phone', //'star'
+          // computed: '_computeData(appSettings, userSettings, view, name)',
+				},
+
+        entity: {
+          type: String,
+          //notify: true,
+        }
+
+				// dataString: { // right side (or input.value)
+				// 	type: String,
+				// 	notify: true,
+				// 	//observer: '_mediaWidthChanged',
+        //   //value: () => 'vaadin:phone', //'star'
+				// },
+
+      }}
+      
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+			}
+
+      _computeDataExists(data) {
+        // console.log('data\n', data);
+        return (!!data || data===0 || data===false);
+      }
+
+      // _dataChanged(d) {
+      //   console.log('data\n', d);
+      // }
+
+    }
+
+    window.customElements.define(AppItemData.is, AppItemData);
+  </script>
+
+</dom-module>

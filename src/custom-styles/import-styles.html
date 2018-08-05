@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<style>
+  
+  /* font imports */
+  /** /
+  @import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400');
+  @import url('https://fonts.googleapis.com/css?family=Lato:300,400');
+  /** /
+  @font-face {
+    font-family: 'Roboto';
+    src: url('/bower_components/font-roboto/roboto.html');
+  }
+  /**/
+  
+  html,
+  body {
+    
+    margin: 0;
+    font-family: 'Roboto', 'Noto', 'Lato', 'Open Sans', sans-serif;
+    font-size: 15px; /* 13px */
+    line-height: 1.15; /* 1.5 */
+    min-height: 100vh;
+    background-color: #FAFAFA; /* var(--paper-pink-500); /* red; /* yellow; /* should never see; indicates problem */
+    
+    /* variables */
+    
+    /* https://codecrafted.net/randommaterial/                  */
+    /* https://www.materialpalette.com/deep-purple/deep-orange  */
+    /* theme-colors.html                                        */
+    /* --dark-primary-color                                     */
+    /* --primary-color                                          */
+    /* --light-primary-color                                    */
+    /* --accent-color                                           */
+    /* --text-icons              #FFFFFF opacity: 1.00          */
+    /* --primary-text            #212121 opacity: 0.87          */
+    /* --secondary-text          #757575 opacity: 0.54          */
+    /* --divider-color-text      #BDBDBD opacity: 0.26          */
+    --opacity-normal:   0.87; /* #212121 --primary-text         */
+    --opacity-dim:      0.54; /* #757575 --secondary-text       */
+    --opacity-divider:  0.26; /* #BDBDBD --divider-color        */
+    --opacity-disabled: 0.26; /* #BDBDBD --divider-color        */
+    
+    --water: #1879DB; /* #187CDD #1778DC */
+    --water-light: #1B87E3;
+    --water-dark: #166ED5;
+    --charcoal: rgb(75, 75, 75); /*#4B4B4B;*/
+    --charcoal-light: #585858;
+    --charcoal-dark: rgb(67, 67, 67); /*#434343;*/
+    --mist: #FAFAFA;
+
+    /* highlight * /
+    --highlight: red;
+    --highlight: var(--apple-ios-pink);
+    --highlight: var(--apple-ios-yellow);
+    --highlight: var(--paper-blue-500);
+    --highlight: var(--paper-teal-500);
+    --highlight: var(--paper-indigo-500);
+    --highlight: var(--paper-purple-500);
+    --highlight: var(--paper-amber-500);/*var(--paper-red-500);/*#FFBB00;/*#FFFF00;#FFEE00;>#FFEA00;#FFDD00;#FFCC00;#FFBB00;#FFAA00;#FF9900;#FF8800;yellow;/*#DB6318;* /
+    --highlight: var(--paper-light-blue-500);
+    --highlight: var(--paper-purple-200);
+    --highlight: var(--paper-pink-400);
+    --highlight: var(--paper-purple-a700);
+    --highlight: var(--paper-orange-a700);
+    --highlight: var(--paper-pink-a700);
+    --highlight: var(--paper-yellow-a700);
+    --highlight: var(--paper-pink-500);
+    --highlight: var(--paper-blue-900);
+    /**/
+    --highlight: var(--paper-amber-a700);
+    
+    /* primary * /
+    /* color tool: https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=6002ee * /
+    
+    --app-primary-color: var(--water);
+    --app-primary-color-light: var(--water-light);
+    --app-primary-color-dark: var(--water-dark);
+    
+    --app-primary-color: var(--paper-blue-500);
+    --app-primary-color: var(--paper-indigo-500);
+    --app-primary-color: var(--paper-purple-500);
+    --app-primary-color: var(--paper-deep-purple-500);
+    /**/
+
+
+    /* https://material.io/design/color/the-color-system.html#tools-for-picking-colors */
+    /* https://material.io/tools/color/#!/?view.left=0&view.right=0 */
+    /**/
+    --app-primary-color: var(--paper-pink-500); /* #e91e63 */
+    --app-primary-color-dark: #b0003a;
+    --app-primary-color-light: #ff6090;
+    /** /
+    --app-primary-color: var(--paper-red-500); /* #f44336 * /
+    --app-primary-color-dark: #ba000d;
+    --app-primary-color-light: #ff7961;
+    /** /
+    --app-primary-color: var(--paper-orange-500); /* #ff9800* /
+    --app-primary-color-dark: #c66900;
+    --app-primary-color-light: #ffc947;
+    /** /
+    --app-primary-color: var(--paper-orange-a700); /* #ff6d00 * /
+    --app-primary-color-dark: #c43c00;
+    --app-primary-color-light: #ff9e40;
+    /** /
+    --app-primary-color: var(--paper-deep-orange-500); /* #ff5722 * /
+    --app-primary-color-dark: #c41c00;
+    --app-primary-color-light: #ff8a50;
+    /** /
+    --app-primary-color: var(--paper-amber-500); /* #ffc107 * /
+    --app-primary-color-light: #fff350;
+    --app-primary-color-dark: #c79100;
+    /** /
+    --app-primary-color: var(--paper-amber-a700); /* #ffab00 * /
+    --app-primary-color-dark: #c67c00;
+    --app-primary-color-light: #ffdd4b;
+    /** /
+    --app-primary-color: var(--paper-yellow-a700); /* #ffd600 * /
+    --app-primary-color-dark: #c7a500;
+    --app-primary-color-light: #ffff52;
+    /** /
+    --app-primary-color: var(--paper-light-green-a700); /* #64dd17 * /
+    --app-primary-color-dark: #1faa00;
+    --app-primary-color-light: #9cff57;
+    /** /
+    --app-primary-color: var(--paper-green-a700); /* #00c853 * /
+    --app-primary-color-dark: #009624;
+    --app-primary-color-light: #5efc82;
+    /** /
+    --app-primary-color: var(--paper-light-blue-500); /* #03a9f4 * /
+    --app-primary-color-dark: #007ac1;
+    --app-primary-color-light: #67daff;
+    /** /
+    --app-primary-color: var(--paper-light-blue-a700); /* #0091ea * /
+    --app-primary-color-dark: #0064b7;
+    --app-primary-color-light: #64c1ff;
+    /** /
+    --app-primary-color: var(--paper-blue-a700); /* #2962ff * /
+    --app-primary-color-dark: #0039cb;
+    --app-primary-color-light: #768fff;
+    /** /
+    --app-primary-color: var(--paper-indigo-a700); /* #304ffe * /
+    --app-primary-color-dark: #0026ca;
+    --app-primary-color-light: #7a7cff;
+    /** /
+    --app-primary-color: var(--paper-purple-a400); /* #ab47bc * /
+    --app-primary-color-dark: #790e8b;
+    --app-primary-color-light: #df78ef;
+    /** /
+    --app-primary-color: var(--paper-deep-purple-a700); /* #6200ea * /
+    --app-primary-color-dark: #0a00b6;
+    --app-primary-color-light: #9d46ff;
+    /**/
+
+
+    --app-background-color: var(--mist);
+    --app-highlight-color: var(--highlight);
+    
+    --dashboard-element: var(--charcoal);
+    --dashboard-element-hover: var(--charcoal-dark);
+
+    --primary-color: var(--app-primary-color);
+    --primary-color-dark: var(--app-primary-color-dark);
+    --primary-color-light: var(--app-primary-color-light);
+    --accent-color: var(--app-highlight-color);
+  }
+  
+  /* styling for render while resources are loading */
+  app-main[unresolved] {
+    display: block;
+    min-height: 101vh;
+    font-weight: normal;
+    text-align: center;
+    /** /
+    font-size: 16px;
+    line-height: 68px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    padding: 0 16px;
+    color: black;
+    opacity: var(--opacity-normal);
+    /**/
+    color: #212121;
+    padding: 0;
+    overflow: visible;
+    
+    background-color: var(--app-primary-color); /*rgb(24, 121, 219); /* rgb(250, 250, 250) */
+  }
+  
+  app-main[unresolved] > img.brand {
+    /*/ /
+    margin-top: 50%;
+    /**/
+    margin-top: 25%;
+    height: 8em;
+    max-width: 50vw;
+  }
+
+</style>
+
+<script>
+  const importDoc = document.currentScript.ownerDocument;
+  const style = importDoc.querySelector('style');
+  document.head.appendChild(style);
+</script>

@@ -1,0 +1,403 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<!--- ->
+<link rel="import" href="/src/app-main/app-methods.html">
+
+<!-- state -->
+<link rel="import" href="/src/app-state/state-media.html">
+<link rel="import" href="/src/custom-elements/states-abbreviations/states-abbreviations.html">
+
+<!--- ->
+<link rel="import" href="/src/app-state/state-user-remote.html">
+<link rel="import" href="/src/app-state/state-app-views.html">
+<link rel="import" href="/src/custom-elements/counties-by-zip/counties-by-state.html">
+<!--- ->
+<link rel="import" href="/src/app-state/state-user-local.html">
+<link rel="import" href="/src/custom-styles/list-view-styles.html">
+<link rel="import" href="app-detail.html">
+<!---->
+<link rel="import" href="/src/app-state/state-app-settings.html">
+
+<link rel="import" href="app-list.html">
+
+<dom-module id="app-view">
+  <template>
+      <style xinclude="dashboard-styles">
+      :host {
+        --line-color: #DDDDDD;
+      }
+      .split {
+        border-bottom: 1px var(--line-color) solid;
+        
+        display: grid; /* https://css-tricks.com/snippets/css/complete-guide-grid/ | http://grid.malven.co/ */
+        grid-template-columns: 1fr 1fr;
+      }
+    </style>
+		
+		<!-- v.3 | css-grid layout, responsive, two columns -->
+
+		<!--- ->
+		<app-methods id="methods" xshow-toast xevent-dispatch></app-methods>
+		<!---->
+	  <!-- state -->
+    <state-media media-type="{{mediaType}}"></state-media>
+    <state-app-views app-views="{{appViews}}"></state-app-views>
+    <states-abbreviations state-abbreviation="[[userLocal.state]]" state-name="{{stateName}}"></states-abbreviations>
+
+    <!--- ->
+    <state-user-remote user-remote="{{userRemote}}"></state-user-remote>
+    <counties-by-state counties-by-state="{{countiesByState}}"></counties-by-state>
+		<!--- ->
+    <state-app-settings app-settings="{{appSettings}}"></state-app-settings>
+    <!---->
+    
+    <!---->
+    <template restamp is="dom-if" if="[[_computeShowSplit(mediaType)]]">
+      <div class="wrapper split" xon-tap="_show">
+        <!---->
+        <app-list view-name="[[name]]"
+                  view-type="[[type]]"
+                  items="[[items]]"
+                  xitems="[[appSettings]]"
+                  xitems="[[appViews.lists.settings]]"
+                  on-tapped-app-item="_handleTappedAppItem"
+                  xdetail-save-button="_onSaveAppSettings"
+                  xon-zip-valid="_onZipValid"
+                  >
+        </app-list>
+        <!--- ->
+        <div>hello world</div>
+        <!---->
+        <template restamp is="dom-if" if="[[detail]]">
+          <div hidden$="[[!detail]]">
+            <app-list items="[[detail]]"></app-list>
+          </div>
+        </template>
+        <!--- ->
+        <app-detail></app-detail>
+        <!---->
+        <!-- special-case -->
+        <template restamp is="dom-if" if="[[specialCase]]">
+          <div hidden$="[[!specialCase]]">
+            <counties-by-zip xstate="[[userLocal.state]]"
+                             state="[[stateName]]"                 
+                             >
+            </counties-by-zip>
+          </div>
+        </template>
+        <!---->
+      </div>
+    </template>
+    
+    <!---->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="wrapper">
+        <app-list view-name="[[name]]"
+                  xview-type="[[type]]"
+                  items="[[items]]"
+                  xitems="[[appViews.lists.settings]]"
+                  xitems="[[appSettings]]"
+                  >
+        </app-list>
+      </div>
+    </template>
+    <!---->
+		
+  </template>
+
+  <script>
+    class AppView extends Polymer.Element {
+      
+			static get is() { return 'app-view'; }
+			
+      static get properties() { return {
+				
+				mediaType: {
+					type: String,
+					notify: true,
+				},
+
+				type: {
+					type: String, // 'settings' | 'datalist'
+					//notify: true,
+				},
+
+				name: {
+					type: String,
+					notify: true,
+				},
+
+				// userRemote: {
+				// 	type: Object,
+				// 	notify: true,
+				// },
+
+				// userRemote: {
+				// 	type: Object,
+				// 	notify: true,
+				// },
+
+				userLocal: {
+					type: Object,
+					// notify: true,
+				},
+
+				// appViews: {
+				// 	type: Object,
+				// 	notify: true,
+				// },
+
+				// appSettings: {
+				// 	type: Object,
+				// 	notify: true,
+				// },
+
+				detail: {
+					type: Object, // Array,
+					notify: true,
+				},
+
+        specialCase: {
+          type: String, // 'counties-by-state' // 'paper-item-zip'
+          notify: true,
+        },
+				
+				// _split: {
+				// 	type: Boolean,
+				// 	notify: true,
+				// 	computed: '_computeSplit(mediaType)',
+				// },
+				
+				// settings: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	computed: '_computeSettings(settingsZip, settinsSwitch, settingsInput)',
+				// },
+				
+				// settingsZip: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// 	value: () => ({}),
+				// },
+				
+				// settingsSwitch: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	value: () => ({}),
+				// 	//computed: '_computeSplit(mediaType)',
+				// },		
+				
+				// settingsInput: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// 	value: () => ({}),
+				// },
+				
+				// settingsInvite: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// },
+				
+			  // itemKeys: Array,
+			  // appSettings: Object,
+
+			  items: {
+			  	type: Array,
+			  	notify: true,
+          // observer: '_itemsChanged',
+          // computed: _computeItems(appViews),
+          // computed: '_computeItems(itemKeys, appViews, userRemote)',
+          // computed: '_computeItems(name, appViews, userRemote)',
+          // computed: '_computeItems(appViews)',
+          // computed: '_computeItems(appSettings, userRemote)',
+          // value: () => [
+          //   { type: 'output'   , name: '', icon: 'vaadin:warning'        , label: 'Required information'    , dataString: '0/2'                        , } ,
+          //   { type: 'output'   , name: '', icon: 'vaadin:flag'           , label: 'State'                   , dataString: 'Mississippi'                , } ,
+          //   { type: 'output'   , name: '', icon: 'vaadin:map-marker'     , label: 'County'                  , dataString: 'Biloxi'                     , } ,
+          //   { type: 'output'   , name: '', icon: 'vaadin:pin'            , label: 'Zip'                     , dataString: '90210'                      , } ,
+          //   { type: 'output'   , name: '', icon: 'vaadin:phone'          , label: 'Phone'                   , dataString: '555-555-1212'               , } ,
+          //   { type: 'output'   , name: '', icon: 'vaadin:envelope'       , label: 'Email'                   , dataString: 'myemailaddress@example.com' , } ,
+          //   { type: 'output'   , name: '', icon: 'track-changes'         , label: 'Add counties...'         , dataString: ''                           , } ,
+          //   { type: 'checkbox' , name: '', icon: 'communication:textsms' , label: 'Notify me with text'     , dataBoolean: true                        , } ,
+          //   { type: 'checkbox' , name: '', icon: 'communication:email'   , label: 'Notify me with email'    , dataBoolean: false                       , } ,
+          //   { type: 'checkbox' , name: '', icon: 'vaadin:bolt'           , label: 'Auto text to new leads'  , dataBoolean: true                        , } ,
+          //   { type: 'checkbox' , name: '', icon: 'vaadin:magic'          , label: 'Auto email to new leads' , dataBoolean: false                       , } ,
+          // ],
+			  },
+
+			}}
+			
+			constructor() {
+				super();
+			}
+
+			ready() {
+        super.ready();
+        // window.addEventListener('detail-save-button', e => this._onDetailSaveButton(e));
+        // window.addEventListener('zip-valid', e => this._onZipValid(e));
+        // window.addEventListener( 'update-user-switch' , e => this._onUpdateUserSwitch(e) );
+        // window.addEventListener( 'update-user-input'  , e => this._onUpdateUserInput(e)  );
+        // //window.addEventListener( 'update-user-invite' , e => this._onUpdateUserInvite(e) ); // no need to save prior invitations to settings
+		  }
+
+      _computeTypeIsCountiesByZip (s) { return this._computeTypeIsTarget ( s, 'counties-by-zip' ) }
+			
+			// connectedCallback() {
+			// 	super.connectedCallback();
+			// 	window.addEventListener('updateuserzip', (e) => this.onUpdateUserZip(e));
+			// }
+
+			// disconnectedCallback() {
+			// 	super.disconnectedCallback();
+			// 	window.removeEventListener('updateuserzip', (e) => this.onUpdateUserZip(e));
+			// }
+			
+			// static get observers() {
+			// 	return [
+			// 		'_computeSettings(settingsZip.*, settinsSwitch.*, settingsInput.*)',
+			// 	]
+			// }
+			
+			// _computeSplit(s) {
+			// 	return s !== 'mobile';
+			// }
+      
+			_computeShowSplit(s) {
+				return s !== 'mobile';
+			}
+
+      // _itemsChanged(newData, oldData) {
+      //   // console.log('old-data\n', oldData);
+      //   // console.log('new-data\n', newData);
+      //   console.log('items-changed\n', newData);
+      // }
+
+      _handleTappedAppItem(e) {
+        // assembles detail view and constructs menu items layout
+
+        // const appSettings = this.appSettings;
+        // console.log('app-settings\n', appSettings);
+        const userLocal = this.userLocal;
+        console.log('user-local\n', userLocal);
+
+        // console.log('e\n', e);
+        const item = e.detail; // { detail: @array(strings), menu: @string }
+        // console.log('item\n', item);
+        const itemKeys = item.detail;
+        // console.log('item-keys\n', itemKeys);
+        
+        // special cases // tags: [special-case]
+        // special-case custom element // app-views/menus['custom-elements']
+        const isSpecialCase = (itemKeys[0] === 'counties-by-zip'); // lodash _.isEqual(arg1, arg2)
+        // console.log('isSpecialCase', isSpecialCase);
+        if(isSpecialCase) {
+          this.set('detail', null);
+          this.set('specialCase', 'counties-by-zip');
+          return;
+        }
+        
+        const itemKey = item.key;
+        console.log('item-key\n', itemKey);
+        const views = this.appViews;
+        const menus = views.menus;
+        // console.log('menus\n', menus);
+        const items = views.items; //views['items-keys']; //
+        console.log('items\n', items);
+        //return;
+
+        const itemKeysIsObject = (typeof itemKeys === 'object');
+        // console.log('item-keys-is-object\n', itemKeysIsObject);
+        const itemKeysLength = itemKeysIsObject ? itemKeys.length : false;
+        // console.log('item-keys-length\n', itemKeysLength);
+
+        const detail = ( itemKeysIsObject && itemKeysLength ) ?
+        // tags: [menu-maker], [list-maker], [detail]
+        
+          itemKeys.reduce((c, v, i, a) => {
+            // console.log('v\n', v);
+            let viewItem = items[v];
+            console.log('view-item\n', viewItem);
+            if(itemKey) viewItem.key = itemKey;
+
+            // menus: case: type: 'input-menu'
+            if((viewItem.type === 'input-menu') && viewItem.menu) {
+
+              //console.log('menus\n', menus);
+              let menuName = viewItem.menu;
+              // console.log('menu-name\n', menuName); // 'lead-type'
+              let menuDetail = menus[menuName];
+              // console.log('menu-detail\n', menuDetail);
+              let menuDetailIsObject = (typeof menuDetail === 'object');
+              let menuDetailItems = menuDetailIsObject ? menuDetail.items : false;
+              let menuDetailItemsIsObject = (typeof menuDetailItems === 'object');
+              // console.log('menu-detail-items\n', menuDetailItems);
+
+              // menu.items
+              let menuDetailItemsLength = menuDetailItemsIsObject ? menuDetailItems.length : false;
+              if(menuDetail && menuDetailItems && menuDetailItemsLength && menuDetailItemsIsObject) {
+                // console.log('menu-detail-items-length\n', menuDetailItemsLength);
+
+                // find selected value
+                // let selectedValue = userLocal['lead-type'];
+                let selectedValue = userLocal[menuName];
+                // console.log('selected-value', selectedValue);
+                  
+                // tags: [menu-detail], [menu-selected]
+                // determine which menu item has been selected and set it in the detail menu
+                let j = menuDetailItems.length;
+                while(j--) {
+                  let menuDetailItem = menuDetailItems[j];
+                  // set selected value...
+                  if(menuDetailItem.name === selectedValue) {
+                    // ...at the menu level
+                    menuDetail.selected = selectedValue;
+                    // console.log('menu-detail', menuDetail);
+                    // ...at the item level
+                    menuDetailItem.selected = true;
+                  }
+                };
+
+                let out = [ ...c, { ...viewItem, selected: selectedValue, menuItems: menuDetailItems } ];
+                // console.log('out\n', out);
+                return out;
+                // const ob = Object.assign(viewItem, { menuItems: menuDetailItems } );
+                // c.push(ob);
+                // return c;
+              }
+
+              // // menu.counties
+              // else if(menuName === 'counties-by-zip') {
+              //   // console.log('counties-by-state\n', this.countiesByState);
+              //   console.log('user-local-state\n', userLocal.state);
+              //   console.log('user-local-zip\n', userLocal.zip);
+              // }
+
+              // menu.path
+            }
+
+            // !menu // case: type: all others
+            else {
+              console.log('hai');
+              // return [ ...c, items[v] ];
+              console.log('view-item', viewItem);
+              let out = [ ...c, viewItem ];
+              console.log('out', out);
+              return out;
+            }
+            
+          }, []) : [];//true;//false//() => {return};//[];
+        
+        console.log('detail\n', detail);
+        this.set('specialCase', null);
+        this.set('detail', detail);
+      }
+
+    }
+
+    window.customElements.define(AppView.is, AppView);
+  </script>
+
+</dom-module>

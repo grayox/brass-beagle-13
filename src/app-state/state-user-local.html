@@ -1,0 +1,145 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<!---->
+<link rel="import" href="/bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<!--- ->
+<link rel="import" href="/src/custom-libraries/lodash-js.html">
+<!---->
+
+<!-- state -->
+<link rel="import" href="state-user-settings.html">
+
+<dom-module id="state-user-local">
+  <!---->
+  <template>
+		<style></style>
+    <app-localstorage-document xlog xsession-only key="user-local" data="{{userLocal}}"></app-localstorage-document>
+		<!--- ->
+    <app-localstorage-document xlog xsession-only key="user-local" data="{{userLocal}}"></app-localstorage-document>
+		<app-localstorage-document xlog xsession-only key="user-local-extended" data="{{userLocalExtended}}"></app-localstorage-document>
+    <!--- ->
+    <app-localstorage-document id="storage"
+                               xlog
+                               session-only
+                               key="user-settings"
+                               data="{{userSettings}}"
+                               >
+    </app-localstorage-document>
+    <!---->
+    <state-user-settings user-settings="{{userSettings}}"></state-user-settings>
+    <!---->
+  </template>
+  <!---->
+
+  <script>
+    // state-user-settings fetches settings data from database (getter)
+    // state-user-local distributes local user data throughout app (setter)
+
+    // TLDR: user-settings => user-local
+
+    // @polymerElement
+    class StateUserLocal extends Polymer.Element {
+      static get is() { return 'state-user-local'; }
+
+      static get properties() { return {
+
+				// userLocalExtended: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//observer: '_userLocalExtendedChanged',
+				// },
+
+				userLocal: {
+					type: Object,
+					notify: true,
+					// observer: '_userLocalChanged',
+					// computed: '_computeUserLocal(userLocalExtended)',
+					// computed: '_computeUserLocal(userSettings, userLocalDefault)',
+					computed: '_computeUserLocal(userSettings)',
+				},
+
+				userSettings: {
+					// initial value fetched by app-main.html > firebase-auth.user > path.
+					type: Object,
+					notify: true,
+					// observer: '_userSettingsChanged',
+        },
+        
+        // userLocalDefault: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	// observer: '_userSettingsChanged', // doesn't recognize sub-property changes; listen for event: on-data-changed
+        //   value: () => {
+        //     // to user-local
+        //     const out = {
+        //       'auto-email-leads': false,
+        //       'auto-text-leads': false,
+        //       city: "Enter zip",
+        //       'counties-list': "Select",
+        //       county: "Enter zip",
+        //       email: "Enter",
+        //       'lead-type': "Select",
+        //       'notify-you-email': false,
+        //       'notify-you-text': true,
+        //       phone: "Add",
+        //       'req-info': '0/2',
+        //       state: 'Enter zip',
+        //       zip: 'Enter zip',
+        //     }
+        //     // console.log('out\n', out);
+        //     return out;
+        //   },
+        // },
+
+			}}
+			
+			constructor() {
+				super();
+			}
+			
+			ready() {
+        super.ready();
+        //window.addEventListener('user-action-select', (e) => this.onUserActionSelect(e));
+				//console.log('user-local-extended', this.userLocalExtended);
+        // this.$.doc.destroy();
+      }
+			
+			// _userLocalChanged(userLocalNew, userLocalOld) {
+      // 	console.log('user-local-old\n', userLocalOld);
+			// 	console.log('user-local-new\n', userLocalNew);
+			// }
+
+      // _userSettingsChanged(dataNew, dataOld) {
+      //   console.log('user-settings-old\n', dataOld);
+      //   console.log('user-settings-new\n', dataNew);
+      // }
+			
+			// _computeUserLocal(userSettings, userLocalDefault) {
+			// 	console.log('computing user-local...');
+			// 	// const out = a[0]; //https://stackoverflow.com/a/46529958/1640892
+        
+      //   const ready = (userSettings && userLocalDefault);
+      //   if(!ready) return;
+
+			// 	// const out = userSettings;
+			// 	const out = Object.assign(userLocalDefault, userSettings); // state: undefined or 'Enter zip'
+			// 	// const out = Object.assign({}, userSettings); // state: CA
+			// 	// const out = { ...userLocalDefault, ...userSettings }; // state: CA
+			// 	console.log('user-local', out);
+			// 	return out;
+      // }
+      
+      _computeUserLocal(userSettingsNew, userSettingsOld) {
+        // console.log('user-settings-old', userSettingsOld);
+        // console.log('user-settings-new', userSettingsNew);
+        const out = userSettingsNew;
+        // console.log('user-Local', out);
+        return out;
+      }
+			
+    }
+
+    window.customElements.define(StateUserLocal.is, StateUserLocal);
+  </script>
+</dom-module>

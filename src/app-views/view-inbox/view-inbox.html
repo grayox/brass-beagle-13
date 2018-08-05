@@ -1,0 +1,549 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!--- ->
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/src/custom-styles/split-screen-styles.html">
+<link rel="import" href="/src/custom-styles/split-screen-animation.html">
+
+<link rel="import" href="view-inbox-list.html">
+<link rel="import" href="view-inbox-detail.html">
+
+<!-- state -->
+<link rel="import" href="/src/app-state/state-media.html">
+<link rel="import" href="/src/app-state/state-user-local.html">
+<!---->
+<link rel="import" href="/src/app-main/app-methods.html">
+<!---->
+<link rel="import" href="/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+<link rel="import" href="/src/custom-elements/animated-css.html">
+
+<!--- ->
+<!--- ->
+Demos
+https://gridbyexample.com/patterns/header-asmany-footer/
+https://codepen.io/rachelandrew/pen/zwPEoX
+<!---->
+
+<dom-module id="view-inbox">
+
+  <template>
+
+    <style include="split-screen-styles split-screen-animation"></style>
+		
+    <!-- state -->
+    <state-media media-type="{{mediaType}}"></state-media>
+    <state-user-local user-local="{{userLocal}}"></state-user-local>
+
+    <app-methods id="methods"></app-methods>
+
+    <!--- ->
+    <div class="wrapper split">
+
+      <view-inbox-list id="list-desktop"
+                        xselected="{{selected}}"
+                        xselected="{{selectedList}}"
+                        xselected-item="{{selectedList}}"
+                        selected-item="{{selectedItem}}"
+                        user-local="[[userLocal]]"
+                        xon-tap="_showDetailDesktop"
+                        >
+      </view-inbox-list>
+
+      <view-inbox-detail xselected="[[selected]]"
+                          xselected="[[selectedDetail]]"
+                          xitem="[[selectedDetail]]"
+                          item="[[selectedItem]]"
+                          user-local="[[userLocal]]"
+                          >
+      </view-inbox-detail>
+
+    </div>
+    <!---->
+
+
+    <!-- desktop, tablet -->
+    <template restamp is="dom-if" if="[[_computeShowSplit(mediaType)]]">
+      <div class="wrapper split">
+        <view-inbox-list id="list-desktop"
+                          xselected="{{selected}}"
+                          xselected="{{selectedList}}"
+                          xselected-item="{{selectedList}}"
+                          selected-item="{{selectedItem}}"
+                          user-local="[[userLocal]]"
+                          xon-tap="_showDetailDesktop"
+                          xon-selected-changed="_showDetailDesktop"
+                          on-selected-item-changed="_showDetailDesktop"
+                          >
+        </view-inbox-list>
+        <animated-css id="animated-detail-desktop"
+                      entry-animation="slideInLeft"
+                      exit-animation="slideOutLeft"
+                      xentry-animation="[[animationEntry]]"
+                      xexit-animation="[[animationExit]]"
+                      on-animation-end="_onAnimationEnd"
+                      xlast-animation-type="{{lastAnimationType}}"
+                      xlast-animation-name="{{lastAnimationName}}"
+                      xshow
+                      >
+          <view-inbox-detail xselected="[[selected]]"
+                              xselected="[[selectedDetail]]"
+                              xitem="[[selectedDetail]]"
+                              item="[[selectedItem]]"
+                              user-local="[[userLocal]]"
+                              >
+          </view-inbox-detail>
+        </animated-css>
+      </div>
+    </template>
+
+    <!-- with animation and without iron pages -->
+    <!-- mobile -->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="animated-pages-wrapper">
+       
+        <!-- view-inbox-list -->
+        <animated-css id="animated-list-mobile"
+                      entry-animation="slideInLeft"
+                      exit-animation="slideOutLeft"
+                      xentry-animation="[[animationEntry]]"
+                      xexit-animation="[[animationExit]]"
+                      show
+                      >
+          <div name="list" xon-tap="_showDetailMobile">
+            <view-inbox-list id="list-desktop"
+                              xselected="{{selected}}"
+                              xselected="{{selectedList}}"
+                              xselected-item="{{selectedList}}"
+                              selected-item="{{selectedItem}}"
+                              user-local="[[userLocal]]"
+                              xon-tap="_showDetailMobile"
+                              xon-selected-changed="_showDetailMobile"
+                              on-selected-item-changed="_showDetailMobile"
+                              >
+            </view-inbox-list>
+          </div>      
+        </animated-css>
+
+        <!-- view-inbox-detail -->
+        <div name="detail" id="detail">
+          <animated-css id="animated-detail-mobile"
+                        entry-animation="slideInRight"
+                        exit-animation="slideOutRight"
+                        xentry-animation="[[animationEntry]]"
+                        xexit-animation="[[animationExit]]"
+                        xhidden
+                        >
+            <!--- ->
+            <paper-icon-button icon="arrow-back" on-tap="_resetList"></paper-icon-button>
+            <!---->
+            <app-item type="subpage-header"
+                      on-subpage-back-button="_showListMobile"
+                      xlabel="[[selected]]"
+                      label="Return to list"
+                      >
+            </app-item>
+            <!---->
+            <view-inbox-detail xselected="[[selected]]"
+                                xselected="[[selectedDetail]]"
+                                xitem="[[selectedDetail]]"
+                                item="[[selectedItem]]"
+                                user-local="[[userLocal]]"
+                                >
+            </view-inbox-detail>
+          </animated-css>
+        </div>
+        <!---->
+        <!---->      
+      </div>
+    </template>
+    <!---->
+
+  </template>
+
+  <script>
+
+    class ViewInbox extends Polymer.Element {
+
+      static get is() { return 'view-inbox'; }
+
+			static get properties() { return {
+				
+				mediaType: {
+					type: String, // 'mobile' | 'tablet' | 'desktop'
+					notify: true,
+        },
+        
+        userLocal: {
+      		type: Object,
+					notify: true,
+          // observer: '_userLocalChanged',
+        },
+
+        handledItemKeys: {
+          type: Array,
+          notify: true,
+          value: () => [],
+        }
+
+        // animationEntry: {
+        //   type: String,
+        //   notify: true,
+        //   value: () => ''
+        // },
+				
+				// _split: {
+				// 	type: Boolean,
+				// 	notify: true,
+				// 	computed: '_computeSplit(mediaType)',
+				// },
+
+        // selectedItem: {
+        //   type: Object,
+        //   notify: true,
+        //   observer: '_selectedItemChanged',
+        // },
+
+				// selectedList: {
+				//   type: String,
+        //   notify: true,
+        //   observer: '_selectedListChanged',
+				// },
+
+				// selectedDetail: {
+				// 	type: String,
+				// 	notify: true,
+				// },
+
+				// selected: {
+				// 	type: String,
+				// 	notify: true,
+				// },
+
+				// label: {
+				// 	 type: String,
+        //   notify: true,
+        //   computed: '_computeLabel(selected)',
+				// },
+    
+				// subroute: {
+				// 	type: String,
+        //   notify: true,
+        //   value: () => 'list', // 'list' | 'detail'
+				// },
+
+      }}
+			
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+			}
+      
+      _computeShowSplit(s) {
+				return s !== 'mobile';
+      }
+
+      _handleAnimationEnd(e) {
+        // handle selected data apart from the animation effect
+
+        // console.log('e\n', e);
+
+        const selectedItem = this.selectedItem;
+        // console.log('selected-item\n', selectedItem);
+
+        const ready1 = selectedItem && selectedItem.$key;
+        if(!ready1) return;
+
+        // const data = selectedItem;
+        // const key = data.$key;
+        const key = selectedItem.$key;
+
+        const keys = this.handledItemKeys;
+        // reference: https://www.polymer-project.org/1.0/docs/devguide/model-data#array-mutation
+        
+        const ready2 = keys.indexOf(key) < 0;
+        // console.log('ready\n', ready);
+        if(!ready2) return;
+        // if(keys.indexOf(key) > -1) return;
+        // if(this.handledItemKeys.indexOf(key) > -1) return;
+        // console.log('keys', keys);
+
+        const methods = this.$.methods;
+				
+        // archive
+          // create archive record
+          // delete inbox record
+          // edit lead record
+
+				const entity = 'lead-received';
+				//const entity = [ XFIX, label, ].join('-'); // 'user-switch-mortgage'
+				//const name = ['update', entity].join('-');
+				
+				// detail = {method: 'save'|'delete', entity: 'deal'|'bid'|'network', data: {new:'data'}}
+        const method = 'save'; // 'save'|'delete'
+        const data = selectedItem;
+        //const entity = 'user-switch'; // 'zip'|'deal'|'bid'|'network'
+
+        // fix any $key error
+        if(data && data.$key) {
+
+          // console.log('data\n', data);
+          // console.log('$key\n', data.$key);
+          // console.log('$key\n', data['$key']);
+          // data.key = data['$key'];
+          data.key = data.$key;
+          delete data.$key;
+  
+          // attempt to use promises
+          // function fixKey() {
+          //   return new Promise((resolve, reject) => {
+          //     data.key = data.$key;
+          //     if(data.key == data.$key) {
+          //       resolve(true);
+          //     } else {
+          //       reject(false);
+          //     }
+          //   })
+          // }
+          
+          // fixKey().then(result => {
+          //   delete data.$key;
+          //   console.log(result);
+          //   console.log('data\n', data);
+          //   console.log('$key\n', data.$key);
+          //   console.log('key\n', data.key);
+          // }).catch(error => {
+          //   console.log(error);
+          // });
+
+        }
+
+				const detail = {
+					method: method,
+					entity: entity,
+					data: data,
+				};
+        // console.log('detail\n', detail);
+        methods.method(detail);
+
+				// save lead
+				// const timestamp = Date.now();
+				// const timestampReverse = ( (-1) * timestamp );
+				// // const data = Object.assign({}, ob, {
+				// const data = Object.assign(selectedItem, {
+				// 	timestamp : timestamp ,
+				// 	timestampReverse : timestampReverse ,
+				// });
+				// //this.item.total = parseFloat(this.item.total);
+				// // console.log('data\n', data);
+				// //console.log('item', this.item);
+				// //this.fire('item-save', this.item);
+				// //this.fire('item-save', {
+				// // this.fire('item-method', {
+				// this._dispatchEvent('item-method', {
+				// 	method: 'save',
+				// 	entity: 'lead-received',
+				// 	data: data,
+				// });
+        
+
+        // account for lead withdrawal
+
+
+        // deduct balance
+        // handled in app.data.json > type:decrement, path:/.../statistics
+
+
+        // record this key so we don't duplicate
+        this.push('handledItemKeys', key);
+        // reference: https://www.polymer-project.org/1.0/docs/devguide/model-data#array-mutation
+        
+
+      }
+
+      _dispatchEvent(name, data) {
+			  const n = name;
+			  const o = {
+			    bubbles: true, // false, //
+			   	composed: true,
+			   	detail: data,
+			  };
+			  // console.log('o\n', o);
+			  const d = new CustomEvent(n, o);
+			  //console.log('d\n', d);
+			  this.dispatchEvent(d);				
+      }
+
+
+      // * * * * * start: animations * * * * *
+
+      // _selectedListChanged(dataNew, dataOld) {
+      //   // log to verify
+      //   console.log('data-old', dataOld);
+      //   console.log('data-new', dataNew);
+
+      //   // define variables
+      //   const detail = this.root.querySelector('#animated-detail-desktop'); // element to animate
+        
+      //   // check for old value
+      //   if(dataOld) {
+      //     // animate old selectedDetail exit
+      //     detail.animateExit(); // wait for on-animation-end to proceed
+      //   } else {
+      //     // hide to do machinations behind-the-scenes
+      //     // detail.hidden = true;
+
+      //     // set new selectedDetail
+      //     this.set('selectedDetail', dataNew);
+
+      //     // animate new selectedDetail entry
+      //     detail.animateEntry();
+
+      //     // unhide to show animations
+      //     // detail.hidden = false;
+      //   }
+      // }
+
+      _onAnimationEnd(e) {
+        // console.log('on-animation-end', e);
+        // console.log('detail', e.detail); // slideInLeft
+        // console.log('type'  , e.type  ); // animation-end
+     
+        // define variables
+        const detail = this.root.querySelector('#animated-detail-desktop'); // element to animate
+        // const lastAnimationType = detail.lastAnimationType;
+        // const lastAnimationType = this.lastAnimationType;
+        // const lastAnimationName = this.lastAnimationName;
+        // console.log('last-animation-type', lastAnimationType);
+        
+        // if(lastAnimationType === 'exit') { // 'entry'
+        //   // handle selected data apart from the animation effect
+        //   this._handleAnimationEnd();
+        // } else {
+        //   // return if entry-animation just ended (to avoid infinite loop)
+        //   return;
+        // }
+        
+        // otherwise, the last animation type was an 'exit',
+        // so now proceed to implement the next 'entry' animation
+        // console.log('last-animation-name', lastAnimationName);
+
+        // this.set('selectedDetail', dataNew);
+        
+        // wait for promise to return or no element
+        
+        // hide to do machinations behind-the-scenes
+        // detail.hidden = true;
+
+        // set new selectedDetail
+        // const selectedList = this.selectedList;
+        // this.set('selectedDetail', selectedList);
+
+        // animate new selectedDetail entry
+        detail.animateEntry();
+
+        // handle selected data apart from the animation effect
+        this._handleAnimationEnd(e);
+        
+        // unhide to show animations
+        // detail.hidden = false;
+          
+        this._scrollIntoView();
+          
+      }
+    
+      _scrollIntoView() {
+        // auto scroll to top of page, with animation
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+        const top = document.body;
+        top.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start', // 'end', 
+          inline: 'nearest', // 'end', // 'start', //
+        });
+
+        // https://api.jquery.com/scrollTop/
+        // $('#top').scrollTop();
+        // $(window).scrollTop();
+      }
+
+      _showDetailDesktop() {
+        const ready = !!this.selectedItem;
+        if(!ready) return;
+        
+        const detail = this.root.querySelector('#animated-detail-desktop');
+        if(!detail) return;
+
+        detail.animateExit();
+        detail.animateEntry();
+      }
+
+      _showDetailMobile() {
+        const ready = !!this.selectedItem;
+        if(!ready) return;
+        
+        // this.set('subroute', 'detail');
+
+        const list = this.root.querySelector('#animated-list-mobile');
+        // list.animation = 'slideOutLeft';
+        if(list) list.animateExit();
+
+        const detail = this.root.querySelector('#animated-detail-mobile');
+        // detail.hidden = false;
+        // detail.animation = 'slideInRight';
+        if(detail) detail.animateEntry();
+      }
+      
+      _showListMobile() {
+        // this.set('subroute', 'list');
+
+        const list = this.root.querySelector('#animated-list-mobile');
+        // list.animation = 'slideInLeft';
+        list.animateEntry();
+
+        const detail = this.root.querySelector('#animated-detail-mobile');
+        // detail.animation = 'slideOutRight';
+        detail.animateExit();
+      }
+
+      // _afterShowList() {
+      //   const list = this.root.querySelector('#animated-list-mobile');
+      //   list.hidden = false;
+
+      //   const detail = this.root.querySelector('#animated-detail-mobile');
+      //   detail.hidden = true;
+      // }
+
+      // _afterShowList() {
+      //   const list = this.root.querySelector('#animated-list-mobile');
+      //   list.hidden = true;
+
+      //   const detail = this.root.querySelector('#animated-detail-mobile');
+      //   detail.hidden = false;
+      // }
+
+      // * * * * * end: animations * * * * *
+		
+    }
+
+    customElements.define(ViewInbox.is, ViewInbox);
+
+  </script>
+
+</dom-module>

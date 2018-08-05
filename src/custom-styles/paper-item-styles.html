@@ -1,0 +1,271 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="paper-item-styles">
+  <template>
+		<!---->
+    <style>
+
+      /**
+       * * * Note * * *
+       * Wrap groups of app-items in
+       * <div role="listbox"></div>
+       * to prevent spaces between items
+       * * * *  * * * *
+       */
+
+      :host {
+        --highlight: {
+          /** /
+          background-color: var(--app-primary-color);
+          /**/
+          background-color: var(--app-primary-color-dark);
+          color: white;
+          /** /
+          border-radius: 4px;
+          /**/
+          }
+
+        --disabled: {
+            opacity: var(--opacity-disabled); /* 0.26 | also works: 0.33; */
+            cursor: not-allowed;
+          }
+
+        /** /
+        --bleed-spacing: {
+          margin: 0;
+          padding: 0;
+        }
+        /** /
+        paper-item {
+          margin: 0;
+          padding: 0;
+        }
+        /**/
+      }
+
+      paper-icon-button {
+        cursor: pointer;
+        /** /
+        cursor: default;
+        /**/
+      }
+
+      paper-icon-item, paper-item {
+        text-align: start;
+        background-color: white;
+
+        /** /
+        border: 1px solid #DDDDDD; /* rgb(221, 221, 221);*/
+        /* per reference: https://stackoverflow.com/a/4062032/1640892 */
+        /**/
+        border: 1px solid rgb(221, 221, 221);
+        border: 1px solid rgba(221, 221, 221, .5);
+        -webkit-background-clip: padding-box; /* for Safari */
+        background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+
+        cursor: pointer;
+        /** /
+        white-space: nowrap;
+        @apply --bleed-spacing;
+        /**/
+      }
+
+      app-item[type="menu-item"], app-item[type="menu-item"] paper-icon-button {
+        cursor: pointer;
+      }
+
+      .header {
+        background-color: var(--primary-color); /* --primary-color */
+        color: white;
+        text-transform: initial; /* capitalize; /* uppercase */
+      }
+
+      .subheader {
+        background-color: var(--paper-gray-300);/*lightgrey; /*var(--primary-color); /* --primary-color */
+        /** /
+        color: var(--primary-color);
+        color: var(--paper-gray-500);
+        /**/
+        font-weight: bold;
+        font-size: smaller;
+        text-transform: uppercase;
+        opacity: var(--opacity-dim);
+      }
+
+      .buttons {
+        text-align: end;
+      }
+
+      /** /
+      .primary {
+        background-color: var(--primary-color);
+        color: white;
+      }
+      /**/
+
+      .menu-icon-selected {
+        color: var(--app-primary-color);
+        /** /
+        color: var(--paper-green-500);
+        color: var(--paper-yellow-500);
+        /**/
+      }
+
+      .button-save {
+        border-radius: 4px;          
+        @apply --highlight;
+      }
+
+      .disabled {
+        @apply --disabled;
+      }
+
+			paper-fab {
+        position: fixed;
+        top: 54px;
+        right: 8px;
+        z-index: 1;
+        /** /
+        margin: auto;
+        right: 24px;
+        bottom: 32px;          
+        /**/
+      }
+
+      div[role="listbox"] {
+        border: 1px solid #DDDDDD;
+      }
+
+      .avatar {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        /** /
+        background: var(--app-primary-color);
+        background: var(--paper-amber-500);
+        /**/
+        opacity: var(--opacity-dim); /*0.54;*/
+      }
+
+      .avatar-small {
+        width: 20px;  /*40px*/
+        height: 20px;  /*40px*/
+      }
+
+      .dim {
+        opacity: var(--opacity-dim); /*0.54;*/
+      }
+
+      .italic {
+        font-style: italic;
+      }
+
+      .urgent {
+        font-weight: 900;
+        opacity: 1.0;
+        color: white;
+        background-color: red;
+      }
+
+      /** /
+      .blue {
+        background-color: var(--paper-light-blue-300);
+      }
+      /**/
+
+      /* test-1 * /
+
+      .selected {
+        color: var(--paper-amber-500);
+        /** /
+        --paper-icon-button-ink-color: var(--paper-amber-500);;
+        /** /
+      }
+
+      .default {
+        color: var(--primary-text-color);
+      }
+
+      /* test-2 * /
+
+      paper-item-body {
+        margin-left: 8px;
+      }
+
+      paper-icon-item {
+        padding-right: 42px;
+      }
+
+      /**/
+
+
+      .header-parent, .subheader-parent {
+        /**
+         * 1. background-color css needs to be applied to <div> parent of <paper-item>
+         * otherwise, the background will be partially transparent
+         * 2. var(--mist) color matches with css set for #main-content
+         */
+        background-color: var(--mist);
+        /** /
+        background-color: blue;
+        background-color:rgba(0, 0, 255, 1.0);
+        z-index: 1;
+        /**/
+      }
+
+      .subpage-header {
+        color: white;
+        opacity: 1.0;
+        font-weight: bold;
+        background-color: var(--app-primary-color-light);
+        /** /
+        background-color: var(--accent-color);
+        background-color: var(--primary-color-dark);
+        background-color: var(--primary-color-light);
+        background-color: var(--paper-blue-500);
+        background-color: var(--apple-ios-blue);
+        background-color: orange;
+        /** /
+        --iron-icon-stroke-color: white;
+        --iron-icon: {
+          opacity: 1.0;
+          color: white;
+        };
+        /**/
+      }
+
+      /** /
+      .subpage-header > paper-icon-button {
+        --paper-icon-button: {
+          opacity: 1.0;
+          color: white;
+          --iron-icon: {
+            opacity: 1.0;
+            color: white;
+          };
+          --iron-icon-stroke-color: white;
+        };
+      }
+      /**/
+
+      gold-phone-input {
+        --gold-phone-input-country-code: {
+          margin-right: 0.5em;
+          opacity: var(--opacity-dim);
+        };
+      }
+
+      /** /
+      paper-item, paper-icon-item {
+        --paper-item-selected: {
+          background-color: black;
+          color: white;
+        };
+      }
+      /**/
+
+    </style>
+  </template>
+</dom-module>

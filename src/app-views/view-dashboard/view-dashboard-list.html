@@ -1,0 +1,260 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!--- ->
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<!-- state -->
+<link rel="import" href="/src/app-state/state-user-settings.html">
+<link rel="import" href="/src/app-state/state-user-statistics.html">
+
+<!--- ->
+<link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+<!---->
+
+<link rel="import" href="/bower_components/vaadin-icons/vaadin-icons.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/iron-icon/iron-icon.html">
+
+<!---->
+<link rel="import" href="/bower_components/paper-item/paper-item-shared-styles.html">
+<link rel="import" href="/src/custom-styles/paper-item-styles.html">
+<!---->
+<link rel="import" href="/src/custom-styles/paper-item-styles.html">
+
+<link rel="import" href="/src/custom-libraries/numeral-js.html">
+
+<!--- ->
+<link rel="import" href="dashboard-element.html">
+<link rel="import" href="dashboard-styles.html">
+<!--- ->
+
+Demos
+https://gridbyexample.com/patterns/header-asmany-footer/
+https://codepen.io/rachelandrew/pen/zwPEoX
+<!---->
+
+<dom-module id="view-dashboard-list">
+
+  <template>
+
+    <style include="paper-item-styles"></style>
+
+		<!-- state -->
+		<state-user-settings user-settings="{{userSettings}}"></state-user-settings>
+		<state-user-statistics user-statistics="{{userStatistics}}"></state-user-statistics>
+    
+    <div role="listbox">
+        
+      <iron-selector role="listbox"
+                     selected="{{selected}}"
+                     xattr-for-selected="name"
+                     attr-for-selected="label"
+                     xselectable=".selectable"
+                     >
+
+        <app-item label="Balances"
+                  type="subheader"
+                  >
+        </app-item>
+  
+        <app-item label="Deposits"
+                  type="output-one-line"
+                  xicon="vaadin:cloud-upload"
+                  icon="vaadin:plus"
+                  data="[[_showNumber(userStatistics.count-deposits)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Withdrawals"
+                  type="output-one-line"
+                  xicon="vaadin:cloud-download"
+                  icon="vaadin:minus"
+                  data="[[_showNumber(userStatistics.count-withdrawals)]]"
+                  >               
+        </app-item>
+  
+        <app-item label="Net"
+                  type="output-one-line"
+                  xicon="vaadin:piggy-bank-coin"
+                  icon="view-stream"
+                  data="[[_showNumber(userStatistics.net-balance)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Inventories"
+                  type="subheader"
+                  >
+        </app-item>
+  
+        <app-item label="Inbox"
+                  type="output-one-line"
+                  xicon="vaadin:group"
+                  icon="vaadin:cloud-download"
+                  xdata="516"
+                  data="[[_showNumber(userStatistics.count-withdrawals)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Archive"
+                  type="output-one-line"
+                  icon="vaadin:database"
+                  xdata="516"
+                  data="[[_showNumber(userStatistics.count-withdrawals)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Outbox"
+                  type="output-one-line"
+                  xicon="vaadin:group"
+                  icon="vaadin:cloud-upload"
+                  xdata="516"
+                  data="[[_showNumber(userStatistics.count-deposits)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Contacts"
+                  type="output-one-line"
+                  icon="social:person-add"
+                  data="[[_showNumber(userStatistics.count-contacts)]]"
+                  >               
+        </app-item>
+  
+        <app-item label="Key settings"
+                  type="subheader"
+                  >
+        </app-item>
+  
+        <app-item label="Required"
+                  type="output-one-line"
+                  icon="vaadin:power-off"
+                  xdata="0/2"
+                  data="[[_showRequired(userSettings)]]"
+                  >
+        </app-item>
+  
+        <app-item label="Category"
+                  type="output-one-line"
+                  icon="vaadin:puzzle-piece"
+                  data="[[userSettings.lead-type]]"
+                  >
+        </app-item>
+  
+        <app-item label="Location"
+                  type="output-one-line"
+                  icon="track-changes"
+                  data="[[userSettings.geo-select-location]]"
+                  >
+        </app-item>
+  
+        <app-item label="State"
+                  type="output-one-line"
+                  icon="vaadin:flag"
+                  data="[[userSettings.geo-select-region]]"
+                  >
+        </app-item>
+  
+        <app-item label="Available actions"
+                  type="subheader"
+                  >
+        </app-item>
+  
+        <app-item label="Add new lead..."
+                  type="output-one-line"
+                  xicon="chevron-right"
+                  xicon="vaadin:chevron-right"
+                  icon="vaadin:angle-right"
+                  data="⏩"
+                  >
+        </app-item>
+  
+        <app-item label="Review available leads..."
+                  type="output-one-line"
+                  xicon="chevron-right"
+                  xicon="vaadin:chevron-right"
+                  icon="vaadin:angle-right"
+                  xdata=""
+                  >
+        </app-item>
+  
+        <app-item label="Invite a contact..."
+                  type="output-one-line"
+                  xicon="chevron-right"
+                  xicon="vaadin:chevron-right"
+                  icon="vaadin:angle-right"
+                  data="⏩"
+                  >
+        </app-item>
+
+      </iron-selector>
+
+    </div>
+
+  </template>
+
+  <script>
+
+    class ViewDashboardList extends Polymer.Element {
+
+      static get is() { return 'view-dashboard-list'; }
+
+      static get properties() { return {
+  
+        // mediaWidth: {
+        // 	type: Number, // 0, 1, 2, 3
+        // 	notify: true,
+        // 	//observer: '_mediaWidthChanged',
+        // },
+        
+        selected: {
+          type: String,
+          notify: true,
+          //observer: '_selectedChanged',
+        },
+        
+      }}
+			
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+			}
+
+      _showNumber(n) {
+        const out = n ? numeral(n).format('0,0') : 0;
+        return out;
+      }
+
+      _showRequired(userSettings) {
+        // const userSettings = this.userSettings;
+
+        const ready = userSettings;
+        if(!ready) return;
+
+        let i = 0;
+        if(userSettings['geo-select-valid']) i++;
+        if(userSettings['lead-type']) i++;
+
+        const out = [i, 2].join('/');
+        return out;
+      }
+		
+    }
+
+    customElements.define(ViewDashboardList.is, ViewDashboardList);
+
+  </script>
+
+</dom-module>

@@ -1,0 +1,98 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/src/app-shell/app-shell.html">
+
+<link rel="import" href="/src/app-forms/new-lead-dialog.html">
+<link rel="import" href="/src/app-forms/feedback-dialog.html">
+<link rel="import" href="/src/app-forms/help-dialog.html">
+
+<dom-module id="loggedin-view">
+	<template>
+
+    <style></style>
+    
+    <new-lead-dialog id="form-new-lead-dialog"></new-lead-dialog>
+    <feedback-dialog id="feedback"></feedback-dialog>
+    <help-dialog id="help"></help-dialog>
+
+    <app-shell></app-shell>
+		
+	</template>
+
+ <script>
+	 
+    class LoggedinView extends Polymer.Element {
+
+      static get is() { return 'loggedin-view'; }
+			
+			// static get properties() { return {
+			//   // user: {
+			//   //   type: Object,
+			//   //   notify: true,
+      //   //   //observer: '_userChanged',
+      //   // },
+      // }}
+
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+        window.addEventListener('overflow-menu-selected-changed' , e => this._onOverflowMenuSelectedChanged(e));
+        window.addEventListener('paper-fab-tapped'               , e => this._onPaperFabTapped             (e));
+      }
+
+      _dispatchEvent(name, data) {
+			  const n = name;
+			  const o = {
+			    bubbles: true, //false,
+			   	composed: true,
+			   	detail: data,
+			  };
+			  // console.log('o\n', o);
+			  const d = new CustomEvent(n, o);
+			  // console.log('d\n', d);
+			  this.dispatchEvent(d);				
+      }
+      
+      _onOverflowMenuSelectedChanged(e) {
+        // console.log('e\n', e);
+        const detail = e.detail;
+        // console.log('detail\n', detail); // 'feedback', 'help', 'logout'
+        if(detail == 'logout') {
+          // console.log('execute logout...');
+          const name = 'logout';
+          const data = null;
+          this._dispatchEvent(name, data);
+        } else {
+          this._openDialog(detail);
+        }
+      }
+      
+      _onPaperFabTapped(e) {
+        // console.log('e\n', e);
+        const detail = e.detail;
+        // console.log('detail\n', detail);
+        this._openDialog(detail);
+      }
+     
+      _openDialog(s) {
+        // console.log('s\n', s); // 'feedback', 'help', 'logout'
+        // const dialog = this.$.dialog;
+        const dialog = this.$[s];
+        dialog.opened = true;
+      }
+      
+      // _closeDialog() {
+      //   const dialog = this.$.dialog;
+      //   dialog.opened = false;
+      // }
+
+		}
+
+    customElements.define(LoggedinView.is, LoggedinView);
+
+  </script>
+</dom-module>

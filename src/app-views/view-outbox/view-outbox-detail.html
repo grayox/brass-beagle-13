@@ -1,0 +1,204 @@
+<!--- ->
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/src/custom-libraries/moment-js.html">
+<link rel="import" href="/src/custom-elements/states-abbreviations/states-abbreviations.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+
+<!--- ->
+Demos
+https://gridbyexample.com/patterns/header-asmany-footer/
+https://codepen.io/rachelandrew/pen/zwPEoX
+<!---->
+
+<dom-module id="view-outbox-detail">
+
+  <template>
+
+    <style></style>
+    
+    <!-- state -->
+    <states-abbreviations states-abbreviations="{{statesAbbreviations}}"></states-abbreviations>
+
+    <div role="listbox">
+    <!-- wrap app-items in <div role="listbox"></div> to prevent spaces between items -->
+
+      <app-item type="subheader"
+                label="Lead detail"
+                >
+      </app-item>
+
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Name"
+                icon="vaadin:user"
+                xdata="John Doe"
+                data="{{item.name}}"
+                >
+      </app-item>
+              
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Type"
+                icon="vaadin:home"
+                data="{{item.type}}"
+                >
+      </app-item>
+      
+      <app-item type="output-two-line"
+                xtwo-line
+                label="City"
+                icon="star"
+                data="{{item.city}}"
+                >
+      </app-item>
+      
+      <app-item type="output-two-line"
+                xtwo-line
+                label="State"
+                icon="star"
+                xdata="{{item.state}}"
+                data="{{_computeStateName(item.state, statesAbbreviations)}}"
+                >
+      </app-item>  
+      
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Zip"
+                icon="star"
+                data="{{item.zip}}"
+                >
+      </app-item>
+
+      <!--- ->
+      <paper-item-zip zip-code="{{item.zip}}"></paper-item-zip>
+  
+      <!--- ->
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Zip code"
+                icon="vaadin:map-marker"
+                data="{{item.zip}}"
+                >
+      </app-item>
+      <!---->
+  
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Phone"
+                icon="vaadin:phone"
+                data="{{item.phone}}"
+                >
+      </app-item>
+  
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Email"
+                icon="communication:email"
+                data="{{item.email}}"
+                >
+      </app-item>
+  
+      <!--- ->
+      <select-lead-type selected="{{item.type}}"></select-lead-type>
+
+      <!--- ->
+      <app-item type="button-save"
+                on-save-button-tapped="_tappedSave"
+                on-cancel-button-tapped="_tappedCancel"
+                >
+      </app-item>
+      <!---->
+  
+      <app-item type="output-two-line"
+                xtwo-line
+                label="Submitted"
+                xicon="watch-later"
+                icon="device:access-time"
+                xicon="vaadin:clock"
+                xdata="{{item.submitted}}"
+                data="[[_computeTimeAgo(item.timestamp)]]"
+                >
+      </app-item>
+
+    </div>
+
+  </template>
+
+  <script>
+
+    class ViewOutboxDetail extends Polymer.Element {
+
+      static get is() { return 'view-outbox-detail'; }
+
+      static get properties() { return {
+
+      // 	mediaWidth: {
+      // 		type: Number, // 0, 1, 2, 3
+      // 		notify: true,
+      // 		//observer: '_mediaWidthChanged',
+      // 	},
+      
+        item: {
+          type: Object,
+          notify: true,
+        },
+      
+      }}
+     	
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+      }
+
+      _computeStateName(s, o) {
+        const ready1 = !!s;
+        if(!ready1) return '';
+
+        const ready2 = !!o;
+        if(!ready2) return s;
+
+        const ready = ready1 && ready2;
+        if(!ready) return;
+
+        const out = o[s];
+        return out;
+      }
+      
+			_computeTimeAgo(n) {
+				// console.log('item', item);
+        // console.log('n', n);
+        // console.log('typeof-n', typeof n);
+        
+        // const t = item.timestamp;
+        
+        const ready1 = !!n;
+        const ready2 = (typeof n == 'number');
+        const ready = ready1 && ready2;
+        if(!ready) return '';
+
+				const s = moment(n).fromNow(); // http://momentjs.com/docs/#/displaying/fromnow/
+				return s;
+			}
+		
+    }
+
+    customElements.define(ViewOutboxDetail.is, ViewOutboxDetail);
+
+  </script>
+
+</dom-module>

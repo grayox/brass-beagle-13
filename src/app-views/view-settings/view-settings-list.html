@@ -1,0 +1,250 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!--- ->
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<!--- ->
+<link rel="import" href="/src/app-main/app-methods.html">
+
+<!-- state -->
+<!--- ->
+<link rel="import" href="/src/app-state/state-user-local.html">
+<link rel="import" href="/src/app-state/state-user-remote.html">
+<!--- ->
+
+<!--- ->
+<link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+<!---->
+<link rel="import" href="/bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+
+<!---->
+<link rel="import" href="/bower_components/paper-ripple/paper-ripple.html">
+
+<link rel="import" href="/bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/bower_components/paper-item/paper-icon-item.html">
+
+<link rel="import" href="/bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="/bower_components/paper-toggle-button/paper-toggle-button.html">
+<!---->
+<link rel="import" href="/bower_components/paper-item/paper-item-body.html">
+<!---->
+<link rel="import" href="/bower_components/paper-item/paper-item-shared-styles.html">
+<!---->
+<link rel="import" href="/src/custom-styles/paper-item-styles.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+
+<!---->
+
+<dom-module id="view-settings-list">
+
+  <template>
+
+    <style include="paper-item-styles">
+      /** /
+      app-item[name=lead-type] div[secondary] {
+        text-transform: initial; 
+      }
+      /**/
+    </style>
+    
+    <!--- ->
+    <app-methods id="methods" show-toast event-dispatch></app-methods>
+    <!-- state - ->
+    <state-user-local user-local="{{userLocal}}"></state-user-local>
+
+    <!---->
+    <div role="listbox">
+      <!---->
+      <iron-selector role="listbox"
+                     selected="{{selected}}"
+                     attr-for-selected="name"
+                     xselectable=".selectable"
+                     >
+        
+        <!---->
+        <app-item name="user-status"
+                  type="subheader"
+                  label="Status"
+                  >
+        </app-item>
+        <!--- ->
+        <app-item name="req-info"
+                  type="output-one-line"
+                  icon="vaadin:warning"
+                  label="Required information"
+                  data="0/2"
+                  >
+        </app-item>
+        <!---->
+        <app-item name="req-info"
+                  type="output-two-line"
+                  xtwo-line
+                  icon="vaadin:power-off"
+                  label="Required information"
+                  data="2 required, 0 completed"
+                  >
+        </app-item>
+        <!--- ->
+        <app-item name="req-info"
+                  type="output-one-line"
+                  xicon="vaadin:warning"
+                  label="Required information"
+                  data="0/2"
+                  >
+        </app-item>
+        <!--- ->
+        <app-item name="req-info"
+                  type="output-two-line"
+                  xtwo-line
+                  xicon="vaadin:warning"
+                  label="Required information"
+                  data="2 required, 0 complete"
+                  >
+        </app-item>
+        <!---->
+        <app-item name="lead-filters"
+                  type="subheader"
+                  label="Lead filters (required)"
+                  >
+        </app-item>
+        <!---->
+        <app-item name="lead-type"
+                  type="output-two-line"
+                  xtwo-line
+                  icon="vaadin:puzzle-piece"
+                  label="Your lead type"
+                  xlabel-short="Lead type"
+                  xdata="[[leadType]]"
+                  xdata="[[userLocal.lead-type.charAt(0).toUpperCase()]]"
+                  xdata="[[userLocal.lead-type]]"
+                  data="[[leadType]]"
+                  class="selectable"
+                  >
+        </app-item>
+        <app-item name="user-location"
+                  type="output-two-line"
+                  xtwo-line
+                  icon="track-changes"
+                  label="Your location"
+                  xlabel-short="Your location"
+                  xdata="[[userLocal.geo-select-location-region]]"
+                  data="[[geoSelectLocationRegion]]"
+                  class="selectable"
+                  >
+        </app-item>
+        <!---->
+  
+      </iron-selector>
+      <!---->
+    </div>
+    <!---->
+
+  </template>
+
+  <script>
+
+    class ViewSettingsList extends Polymer.Element {
+
+      static get is() { return 'view-settings-list'; }
+
+      static get properties() { return {
+
+				// mediaWidth: {
+				// 	type: Number, // 0, 1, 2, 3
+				// 	notify: true,
+				// 	//observer: '_mediaWidthChanged',
+				// },
+
+				selected: {
+					type: String, //Number,
+					notify: true,
+        },
+        
+        // userLocal: {
+      	// 	type: Object,
+				// 	notify: true,
+        //   // observer: '_userLocalChanged',
+        // },
+
+        leadType: {
+          type: String,
+          notify: true,
+          // observer: '_leadTypeChanged',
+        },
+
+        geoSelectLocationRegion: {
+          type: String,
+          notify: true,
+          // observer: '_geoSelectLocationRegionChanged',
+        },
+
+      }}
+      
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+      }
+
+      // static get observers() {
+      //   return [
+      //     // '_updateDatabase(userRemote, appData, appSettings)',
+      //     // '_initializeDatabase(userRemote, appData, appViews, userSettings, userSettingsOld)',
+      //     '_userLocalChanged(userLocal.*)',
+      //   ]
+      // }
+
+      // _leadTypeChanged(dataNew, dataOld) {
+      //   console.log('data-old\n', dataOld);
+      //   console.log('data-new\n', dataNew);
+      // }
+
+      // _geoSelectLocationRegionChanged(dataNew, dataOld) {
+      //   console.log('data-old\n', dataOld);
+      //   console.log('data-new\n', dataNew);
+      // }
+      
+      // _userLocalChanged(dataNew, dataOld) {
+      //   // console.log('data-old\n', dataOld);
+      //   // console.log('data-new\n', dataNew);
+
+      //   const ready = dataNew;
+      //   if(!ready) return;
+
+      //   const userLocal = dataNew; //dataNew.value; // dataNew.base
+      //   this.set('userLocal', userLocal);
+        
+      //   // console.log('user-local\n', userLocal);
+
+      //   // this.set('leadType', userLocal['lead-type']);
+      //   // console.log('lead-type\n', this.leadType);
+
+      //   // const leadType = userLocal['lead-type'];
+      //   // console.log('lead-type\n', leadType);
+      // }
+		
+    }
+
+    customElements.define(ViewSettingsList.is, ViewSettingsList);
+
+  </script>
+
+</dom-module>

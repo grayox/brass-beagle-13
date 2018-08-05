@@ -1,0 +1,210 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!--- ->
+<!---->
+
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<!-- state -->
+<link rel="import" href="/src/app-state/state-route.html">
+
+<!-- styles - ->
+<link rel="import" href="/bower_components/vaadin-lumo-styles/color.html">
+<link rel="import" href="/bower_components/vaadin-lumo-styles/sizing.html">
+<link rel="import" href="/bower_components/vaadin-lumo-styles/spacing.html">
+<link rel="import" href="/bower_components/vaadin-lumo-styles/style.html">
+<link rel="import" href="/bower_components/vaadin-lumo-styles/typography.html">
+<!---->
+
+<link rel="import" href="/bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/paper-fab/paper-fab.html">
+
+<!-- diaglog - ->
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="/bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
+<!--- ->
+<link rel="import" href="/bower_components/vaadin-dialog/vaadin-dialog.html">
+
+<link rel="import" href="/bower_components/vaadin-button/vaadin-button.html">
+<link rel="import" href="/bower_components/vaadin-dropdown-menu/vaadin-dropdown-menu.html">
+<link rel="import" href="/bower_components/vaadin-form-layout/vaadin-form-layout.html">
+<link rel="import" href="/bower_components/vaadin-text-field/vaadin-text-field.html">
+
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<!---->
+
+<link rel="import" href="/src/app-views/view-dashboard/view-dashboard.html">
+<!--- ->
+<link rel="import" href="/src/app-views/view-inbox/view-inbox.html">
+<!---->
+<link rel="import" href="/src/app-views/view-inbox/view-inbox-gate.html">
+<link rel="import" href="/src/app-views/view-archive/view-archive.html">
+<link rel="import" href="/src/app-views/view-outbox/view-outbox.html">
+<link rel="import" href="/src/app-views/view-contacts/view-contacts.html">
+<link rel="import" href="/src/app-views/view-settings/view-settings.html">
+<!--- ->
+<link rel="import" href="/src/app-shell/view-feedback.html">
+<link rel="import" href="/src/app-shell/view-help.html">
+<!--- ->
+<link rel="import" href="/src/app-views/view-account/view-account.html">
+<!---->
+
+<dom-module id="my-app">
+
+  <template>
+
+		<style>
+
+      paper-fab {
+        z-index: 1;
+  
+        position: fixed;
+        right: 25px;
+        bottom: 75px;          
+        /** /
+        bottom: 30px;          
+        left: 35%;
+        left: 200px;
+        /**/
+        
+        /**  /
+        --paper-fab-background: var(--app-primary-color);
+        /**/
+        --paper-fab-background: var(--accent-color);
+      }
+
+    </style>		
+		
+		<!-- state -->
+		<state-route route="{{route}}"></state-route>
+    
+    <paper-fab icon="add"
+               elevation="1"
+               data-form="form-new-lead-dialog"
+               on-tap="_fabTap"
+               >
+    </paper-fab>
+
+		<!--- ->
+    Hello world
+		<!--- ->
+		<iron-pages selected="{{route}}">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+    </iron-pages>
+    <!---->   	
+    <iron-pages selected="{{route}}"
+                xattr-for-selected="name"
+                xfallback-selection="view-dashboard"
+                >
+		  <!---->
+		  <view-dashboard  name="view-dashboard"></view-dashboard>
+		  <!--- ->
+			<div>Inbox</div>
+		  <!--- ->
+      <view-inbox      name="view-inbox"></view-inbox>
+		  <!---->
+		  <view-inbox-gate name="view-inbox"></view-inbox-gate>
+			<view-archive    name="view-archive"></view-archive>
+		  <!--- ->
+			<div>Outbox</div>
+		  <!---->
+		  <view-outbox     name="view-outbox"></view-outbox>
+		  <view-contacts   name="view-contacts"></view-contacts>
+			<view-settings   name="view-settings"></view-settings>
+			<!--- ->
+		  <view-account    name="view-account"></view-account>
+			<!---->
+		  
+		  <!--- ->
+		  <view-feedback   name="view-feedback"></view-feedback>
+		  <view-help       name="view-help"></view-help>
+		  <view-logout     name="view-logout"></view-logout>
+		  <!---->
+    </iron-pages>
+		
+
+  </template>
+
+  <script>
+
+    class MyApp extends Polymer.Element {
+
+      static get is() { return 'my-app'; }
+
+			static get properties() { return {
+				route: {
+					type: Number,
+					notify: true,
+					//observer: '_routeChanged',
+				},
+	    }}
+			
+      constructor() {
+        super();
+      }
+			
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+        window.addEventListener('mobile-bottom-nav-selected-changed', e => this._onMobileBottomNavSelectedChanged(e));
+			}
+      
+			// _routeChanged(route) {
+			// 	console.log('route', route);
+      // }
+
+      _onMobileBottomNavSelectedChanged(e) {
+        // console.log('e\n', e);
+        const detail = e.detail;
+        this.set('route', detail);
+      }
+      
+      _fabTap(e) {
+        // console.log('e', e);
+        const form = e.target.getAttribute('data-form');
+        console.log('form', form);
+        
+        //this._openForm(form);
+        const name = 'paper-fab-tapped';
+        const data = form;
+        this._dispatchEvent(name, data);
+      }
+
+      _dispatchEvent(name, data) {
+			  const n = name;
+			  const o = {
+			    bubbles: true,
+			   	composed: true,
+			   	detail: data,
+			  };
+			  console.log('o\n', o);
+			  const d = new CustomEvent(n, o);
+			  //console.log('d\n', d);
+			  this.dispatchEvent(d);				
+      }
+		
+    }
+
+    customElements.define(MyApp.is, MyApp);
+
+  </script>
+
+</dom-module>

@@ -1,0 +1,699 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<link rel="import" href="geolocations-data.html">
+<!--- ->
+<link rel="import" href="/src/app-region/geo-code-data.html">
+<!---->
+<!-- region -->
+
+<link rel="import" href="/src/app-view/app-item.html">
+
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="/bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+<link rel="import" href="/src/app-view/app-menu.html">
+<link rel="import" href="/src/custom-libraries/lodash-js.html">
+<!--- ->
+<link rel="import" href="/src/custom-elements/jqueryui-animation.html">
+<!---->
+
+<dom-module id="geo-select">
+  <template>
+		<style include="paper-item-styles">
+      iron-collapse {
+        --iron-collapse-transition-duration: 1000ms;
+      }
+    </style>
+		
+		<geolocations-data geolocations-data="{{geoLocationsData}}" id="top"></geolocations-data>
+    
+    <!--- ->
+    <div role="listbox">
+      <paper-item>
+        <paper-item-body two-line>
+          <div>Profile Photo</div>
+          <div secondary>Change your Google+ profile photo</div>
+        </paper-item-body>
+      </paper-item>
+      <paper-icon-item>
+        <iron-icon icon="communication:phone" slot="item-icon">
+        </iron-icon>
+        <paper-item-body two-line>
+          <div>(650) 555-1234</div>
+          <div secondary>Mobile</div>
+        </paper-item-body>
+      </paper-icon-item>
+      <paper-icon-item>
+        <div class="avatar blue" slot="item-icon"></div>
+        <paper-item-body two-line>
+          <div>Alphonso Engelking</div>
+          <div secondary>Change photo</div>
+        </paper-item-body>
+      </paper-icon-item>
+    </div>
+    <!--- ->
+
+    <!--- ->
+    <app-item xhidden$="[[!geoRegion]]"
+              type="output-one-line"
+              xicon="vaadin:flag"
+              xlabel="Geo location"
+              xlabel="[[geoCountryRegionLocation]]"
+              data="[[geoCountryRegionLocation]]"
+              >
+    </app-item>
+    <!---->
+    
+    <!--- ->
+    <paper-item>
+      <paper-item-body two-line>
+        <div>Your location</div>
+        <!--- /->
+        <div secondary>[[geoCountryRegionLocation]]</div>
+        <!--- ->
+        <div secondary>[[geoLocationRegionCountry]]</div>
+        <!--- /->
+      </paper-item-body>
+    </paper-item>
+    <!---->
+
+    <app-item type="output-two-line"
+              xtwo-line
+              xlabel="Your location"
+              label="Location"
+              data="[[geoCountryRegionLocation]]"
+              >
+    </app-item>
+
+    <!--- ->
+    <jqueryui-animation id="location">
+    <!---->
+    <iron-collapse xhorizontal id="location">
+    <!---->
+      <div xhidden xid="location">
+        <app-menu xmulti
+                  key="geo-select-location"
+                  xkey="region-counties-by-geo"
+                  xkey="[[key]]"
+                  xsubheader="[[regionName]]"
+                  subheader="Location"
+                  xitems="[[menuItems]]"
+                  xitems="[[items]]"
+                  items="[[geoLocationItems]]"
+                  selected="{{geoLocation}}"
+                  xselected="{{selectedMenuItem}}"
+                  xselected-items="{{selectedItems}}"
+                  xselected-label="{{selectedMenuItemLabel}}"
+                  on-app-menu-dom-change="_appMenuDomChangeLocation"
+                  >
+        </app-menu>
+      </div>
+    <!---->
+    </iron-collapse>
+    <!--- ->
+    </jqueryui-animation>
+    <!---->
+
+    <!--- ->
+    <jqueryui-animation id="region">
+    <!---->
+    <iron-collapse xhorizontal id="region">
+    <!---->
+      <div xhidden xid="region">
+        <app-menu xmulti
+                  key="geo-select-region"
+                  xkey="region-counties-by-geo"
+                  xkey="[[key]]"
+                  xsubheader="[[regionName]]"
+                  subheader="Region or state"
+                  xitems="[[menuItems]]"
+                  xitems="[[items]]"
+                  items="[[geoRegionItems]]"
+                  selected="{{geoRegion}}"
+                  xselected="{{selectedMenuItem}}"
+                  xselected-items="{{selectedItems}}"
+                  xselected-label="{{selectedMenuItemLabel}}"
+                  on-app-menu-dom-change="_appMenuDomChangeRegion"
+                  >
+        </app-menu>
+      </div>
+    <!---->
+    </iron-collapse>
+    <!--- ->
+    </jqueryui-animation>
+    <!---->
+
+    <app-menu xmulti
+              xkey="region-counties-by-geo"
+              xkey="[[key]]"
+              xsubheader="[[regionName]]"
+              subheader="Country"
+              xitems="[[menuItems]]"
+              xitems="[[items]]"
+              items="[[geoCountryItems]]"
+              selected="{{geoCountry}}"
+              xselected="{{selectedMenuItem}}"
+              xselected-items="{{selectedItems}}"
+              xselected-label="{{selectedMenuItemLabel}}"
+              >
+    </app-menu>        
+
+  </template>
+
+  <script>
+		class GeoSelect extends Polymer.Element {
+      static get is() { return 'geo-select'; }
+
+      static get properties() {
+        
+        return {
+
+					geoLocationsData: {
+						type: Object,
+						notify: true,
+						//observer: '_geoCodeDataChanged', // For declarative binding only
+					},
+
+          geoCountryItems: {
+            type: Array,
+            notify: true,
+            computed: '_computeGeoCountryItems(geoLocationsData)',
+          },
+
+					geoRegionItems: {
+            type: Array,
+            notify: true,
+            computed: '_computeGeoRegionItems(geoLocationsData, geoCountry)',
+          },
+
+					geoLocationItems: {
+            type: Array,
+            notify: true,
+            computed: '_computeGeoLocationItems(geoLocationsData, geoCountry, geoRegion)',
+          },
+
+					geoCountry: { // 'United States'
+						type: String,
+						notify: true,
+						observer: '_geoCountryChanged',
+            // value: () => 'United States',
+          },
+          
+          geoCountryPrior: String,
+          
+					geoRegion: { // 'California'
+            type: String,
+            notify: true,
+            observer: '_geoRegionChanged',
+						// computed: '_computeGeoRegion(geoCode, geoCodeData)',
+            // value: () => 'California',
+					},
+
+          geoRegionPrior: String,
+          
+					geoLocation: { // 'San Francisco'
+						type: String,
+						notify: true,
+						// computed: '_computeGeoLocation(geoCode, geoCodeData)',
+            // value: () => 'San Francisco',
+					},
+
+					geoKey: { // 'united_states-california-los_angeles'
+						type: String,
+						notify: true,
+						computed: '_computeGeoKey(geoCountry, geoRegion, geoLocation)',
+						// observer: '_geoCodeChanged',
+            // value: () => 'united_states-california-los_angeles',
+					},
+
+					geoCountryRegionLocation: {
+						type: String,
+						notify: true,
+						computed: '_computeGeoCountryRegionLocation(geoCountry, geoRegion, geoLocation)',
+					},
+
+					geoLocationRegionCountry: {
+						type: String,
+						notify: true,
+						computed: '_computeGeoLocationRegionCountry(geoCountry, geoRegion, geoLocation)',
+					},
+
+					geoLocationRegion: {
+						type: String,
+						notify: true,
+						computed: '_computeGeoLocationRegion(geoRegion, geoLocation)',
+					},
+
+					geoValid: {
+						type: Boolean,
+						notify: true,
+						computed: '_computeGeoValid(geoCountry, geoRegion, geoLocation)',
+					},
+
+					geoObject: {
+						type: Object,
+						notify: true,
+						computed: '_computeGeoObject(geoValid, geoKey, geoCountry, geoRegion, geoLocation, geoCountryRegionLocation, geoLocationRegionCountry, geoLocationRegion)',
+					},
+
+				};
+			}
+			
+			constructor() {
+				super();
+			}
+			
+			ready() {
+        super.ready();
+        //window.addEventListener('user-action-select', (e) => this.onUserActionSelect(e));
+				//this.getgeosData(); // use region element instead: <geo-code-data>
+				//this.set('geoValid', !!this._computegeoValid(this.geocountry, this.georegion, this.geolocation));
+		  }
+			
+			// connectedCallback() {
+			// 	super.connectedCallback();
+			// 	//console.log('connected!');
+			// 	//this._init();
+		  // }
+			
+			// _init(s) {
+			// 	//const z = this.geoCode;
+			// 	//console.log('s\n', s);
+			// 	const country = this._computegeocountry(s);
+			// 	//console.log('country\n', country);
+			// 	const region = this._computegeoregion(s);
+			// 	//console.log('region\n', region);
+			// 	const location = this._computegeolocation(s);
+			// 	//console.log('location\n', location);
+			// 	this.set('geocountry', country);
+			// 	this.set('georegion', region);
+			// 	this.set('geolocation', location);
+			// }
+			
+			// getgeosData() { // use region element instead: <geo-code-data>
+			// 	const path = this.geoCodeDataAjaxPath;
+			// 	// const path = 'src/custom-libraries/geo-code-data.json';
+			// 	// http://stackoverflow.com/a/42763681/1640892
+			// 	// https://github.com/PolymerElements/iron-ajax/blob/master/iron-ajax.html#L442
+			// 	const ajax = document.createElement('iron-ajax');
+			// 	ajax.method = 'get';
+			// 	ajax.handleAs = 'json';
+			// 	ajax.contentType = 'application/json';
+			// 	ajax.url = path;
+			// 	const _this = this;
+			// 	ajax.addEventListener('response', function(e) {
+			// 		// Use imperative method for updating as declarative binding is unavailable in a behavior
+			// 		//response handler
+			// 		//console.log('ajax', e);
+			// 		//console.log('ajax', ajax.lastResponse);
+			// 		//return ajax.lastResponse; // does not work
+			// 		_this.geoCodeData = ajax.lastResponse;
+			// 	});
+			// 	ajax.generateRequest();
+			// }
+
+			// _geoCodeChanged(s) {
+			//   //const geoCode = this.geoCode;
+			//   //const geocountry = this.geocountry;
+			//   const georegion = this.georegion;
+			//   //console.log('geo-code\n', s);
+			//   //console.log('geo-code-this\n', geoCode);
+			//   //console.log('country\n', geocountry);
+			//   //console.log('region\n', georegion);
+			//   if(!georegion) {
+			//     //console.log('initializing...', s);
+			//   	 this._init(s);
+			//   }
+      // }
+      
+      _geoCountryChanged(dataNew, dataOld) {
+        // delete region and location
+        this.set('geoValid', false);
+        this.set('geoRegion', null);
+        this.set('geoLocation', null);
+
+        this.set('geoCountryPrior', dataNew);
+      }
+      
+      _geoRegionChanged(dataNew, dataOld) {
+        // delete location
+        this.set('geoValid', false);
+        // this.set('geoRegion', null);
+        this.set('geoLocation', null);
+
+        this.set('geoRegionPrior', dataNew);
+      }
+
+      _computeGeoCountryItems(geoLocationsData) {
+				//console.log('geo-locations-data', geoLocationsData);
+        
+        const ready1 = geoLocationsData;
+        // const ready2 = geoCountry && geoLocationsData.geoCountry;
+        // const ready3 = geoRegion && geoLocationsData[geoCountry][geoRegion];
+
+        const ready = ready1;// && ready2 && ready3;
+        if(!ready) return;
+
+        let out = [];
+        const keys = Object.keys(geoLocationsData); // unique line
+        let i = keys.length;
+        while(i--) {
+          const label = keys[i];
+          // const name = _.kebabCase(label);
+          const name = label;
+          const key = 'geo-select-country';
+          // const icon = 'add';
+          const icon = 'chevron-right';
+          out[i] = {
+            key: key,
+            name: name,
+            icon: icon,
+            label: label,
+          };
+        }      
+        // console.log('out', out);
+				return out;
+			}
+			
+			_computeGeoRegionItems(geoLocationsData, geoCountry) {
+				// console.log('geo-locations-data\n', geoLocationsData);
+				// console.log('geo-country\n', geoCountry);
+				// console.log('geo-location-country\n', geoLocationsData[geoCountry]);
+        const ready1 = geoLocationsData;
+        if(!ready1) return;
+
+        const ready2 = geoCountry;
+        if(!ready2) return;
+        
+        const ready3 = geoLocationsData[geoCountry];
+        if(!ready3) return;
+
+        // const ready4 = geoRegion && geoLocationsData[geoCountry][geoRegion];
+        
+        const ready = ready1 && ready2 && ready3;// && ready4;
+        if(!ready) return;
+
+        // // cleanup
+        // this.set('geoRegion', null);
+        // this.set('geoLocation', null);
+
+        let out = [];
+        const keys = Object.keys(geoLocationsData[geoCountry]); // unique line
+				// console.log('keys\n', keys);
+        let i = keys.length;
+        while(i--) {
+          const label = keys[i];
+          // const name = _.kebabCase(label);
+          const name = label;
+          const key = 'geo-select-region';
+          // const icon = 'add';
+          // const icon = 'expand-more';
+          const icon = 'chevron-right';
+          out[i] = {
+            key: key,
+            name: name,
+            icon: icon,
+            label: label,
+          };
+        }
+        // console.log('out', out);
+				return out;
+			}
+			
+			_computeGeoLocationItems(geoLocationsData, geoCountry, geoRegion) {
+				//console.log('geo-locations-data', geoLocationsData);
+				//console.log('geo-country', geoCountry);
+				//console.log('geo-region', geoRegion);
+
+        const ready1 = geoLocationsData;
+        if(!ready1) return;
+
+        const ready2 = geoCountry && geoLocationsData[geoCountry];
+        if(!ready2) return;
+
+        const ready3 = geoRegion && geoLocationsData[geoCountry][geoRegion];
+        if(!ready3) return;
+
+        const ready = ready1 && ready2 && ready3;
+        if(!ready) return;
+
+        // // cleanup
+        // // this.set('geoRegion', null);
+        // this.set('geoLocation', null);
+
+        let out = [];
+        const keys = geoLocationsData[geoCountry][geoRegion]; // unique line
+        let i = keys.length;
+        while(i--) {
+          const label = keys[i];
+          // const name = _.kebabCase(label);
+          const name = label;
+          const key = 'geo-select-location';
+          const icon = 'add';
+          // const icon = 'chevron-right';
+          out[i] = {
+            key: key,
+            name: name,
+            icon: icon,
+            label: label,
+          };
+        }
+        // console.log('out', out);
+				return out;
+      }
+      
+      _scrollIntoView() {
+        // auto scroll to top of page, with animation
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+        const top = document.body;
+        top.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start', // 'end', 
+          inline: 'nearest', // 'end', // 'start', //
+        });
+
+        // https://api.jquery.com/scrollTop/
+        // $('#top').scrollTop();
+        // $(window).scrollTop();
+      }
+
+      _appMenuDomChangeRegion() {
+
+        // prepare region window
+        const x = this.$.region;
+        x.hidden = false;
+        x.opened = true;
+
+        // prepare location window
+        const y = this.$.location;
+        y.hidden = true;
+        y.opened = false;
+
+        this._scrollIntoView();
+      }
+   
+      _appMenuDomChangeLocation() {
+
+        // prepare location window
+        const y = this.$.location;
+        y.hidden = false;
+        y.opened = true;
+
+        this._scrollIntoView();
+      }
+
+			_computeGeoKey(country, region, location) {
+        const ready = (country && region && location);
+				if(!ready) return;
+
+        let a = [];
+        if(country) {
+          // const x = _.snakeCase(country);
+          const x = _.kebabCase(country);
+          a.push(x);
+        }
+        if(region) {
+          // const y = _.snakeCase(region);
+          const y = _.kebabCase(region);
+          a.push(y);
+        }
+        if(location) {
+          // const z = _.snakeCase(location);
+          const z = _.kebabCase(location);
+          a.push(z);
+        }
+        // country = country ? country : null;
+        // region = region ? region : null;
+        // location = location ? location : null;
+        const out = a.join('_');
+        
+        // console.log('out\n', out);
+				return out;
+			}
+
+			_computeGeoCountryRegionLocation(country, region, location) {
+        // const ready = (country && region && location);
+				// if(!ready) return;
+
+        let a = [];
+        if(country) a.push(country);
+        if(region) a.push(region);
+        if(location) a.push(location);
+        // country = country ? country : null;
+        // region = region ? region : null;
+        // location = location ? location : null;
+        const out = a.join(' > ');
+        
+        // console.log('out\n', out);
+				return out;
+			}
+
+			_computeGeoLocationRegionCountry(country, region, location) {
+        // const ready = (country && region && location);
+				// if(!ready) return;
+
+        let a = [];
+        if(country) a.unshift(country);
+        if(region) a.unshift(region);
+        if(location) a.unshift(location);
+
+        const out = a.join(', ');
+        
+        // console.log('out\n', out);
+				return out;
+			}
+
+			_computeGeoLocationRegion(region, location) {
+        // const ready = (region && location);
+				// if(!ready) return;
+
+        let a = [];
+        // if(country) a.unshift(country);
+        if(region) a.unshift(region);
+        if(location) a.unshift(location);
+
+        const out = a.join(', ');
+        
+        // console.log('out\n', out);
+				return out;
+			}
+
+			_computeGeoValid(country, region, location) {
+				//console.log('compute-geo-valid', country, region, location);
+				const ready1 = !!country && country.length; // control region visibility based on country
+				// this.$.region.opened = ready1;
+				// this.$.region.opened = ready1;
+        // this.$.region.hidden = !ready1;
+        // console.log('ready-1', ready1);
+        if(!ready1) return;
+        
+        const ready2 = !!region && region.length; // control location visibility based on region
+				// this.$.location.opened = ready2;
+        // this.$.location.hidden = !ready2;
+        // console.log('ready-2', ready2);
+        if(!ready2) return;
+        
+        const ready3 = !!location && location.length;
+        // console.log('ready-3', ready3);
+        if(!ready3) return;
+        
+        const data = this.geoLocationsData;
+        const ready4 = !!data
+                      && data[country]
+                      && data[country][region]
+                      && (data[country][region].indexOf(location) > -1)
+        // console.log('ready-4', ready4);
+        if(!ready4) return;
+        
+        const out = !!(ready1 && ready2 && ready3 && ready4);
+        // const out = !!(ready1 && ready2 && ready3);
+        return out;
+			}
+			
+			// _geoCodeDataChanged(o) {
+			// 	//console.log('geoCodeData', o);
+    	// }
+			
+      // _show() {
+			// 	console.log('geoValid\n', this.geoValid);
+			// 	console.log('geo\n', this.geo);
+			// 	console.log('geoCodeData\n', this.geoCodeData);
+			// }
+
+			_dispatchEvent(name, detail) {
+				//this.fire('name', detail);
+				// const n = 'save-app-item';
+				const o = {
+					bubbles: true,
+					composed: true,
+					detail: detail,
+				};
+				const d = new CustomEvent(name, o);
+        this.dispatchEvent(d);
+			}
+
+      _computeGeoObject(geoValid, geoKey, geoCountry, geoRegion, geoLocation, geoCountryRegionLocation, geoLocationRegionCountry, geoLocationRegion) {
+        const ready1 = geoValid;
+        if (!ready1) return;
+
+        const ready2 = (  geoValid
+                       && geoCountry
+                       && geoRegion
+                       && geoLocation
+                       && geoCountryRegionLocation
+                       && geoLocationRegionCountry
+                       && geoLocationRegion
+                       );
+        if (!ready2) return;
+        
+        // region changed without changing location
+        const geoRegionPrior = this.geoRegionPrior;
+        // const ready3 = !( (geoRegion != geoRegionPrior) && (geoLocation == geoLocationPrior) );
+        const ready3 = ( (geoRegionPrior === undefined) || (geoRegionPrior === geoRegion) );
+        if (!ready3) return;
+        
+        // country changed without changing region
+        const geoCountryPrior = this.geoCountryPrior;
+        // const ready4 = !( (geoCountry != geoCountryPrior) && (geoRegion == geoRegionPrior) );
+        const ready4 = ( (geoCountryPrior === undefined) || (geoCountryPrior === geoCountry) );
+        if (!ready4) return;
+
+        const out = {
+          // geoValid: geoValid,
+          // geoKey: geoKey,
+          // geoCountry: geoCountry,
+          // geoRegion: geoRegion,
+          // geoLocation: geoLocation,
+          // geoCountryRegionLocation: geoCountryRegionLocation,        
+          // geoLocationRegionCountry: geoLocationRegionCountry,        
+          'geo-select-valid': geoValid,
+          'geo-select-key': geoKey,
+          'geo-select-country': geoCountry,
+          'geo-select-region': geoRegion,
+          'geo-select-location': geoLocation,
+          'geo-select-country-region-location': geoCountryRegionLocation,        
+          'geo-select-location-region-country': geoLocationRegionCountry,        
+          'geo-select-location-region': geoLocationRegion,     
+        }
+        
+        // console.log('geo-object-valid\n', out);
+        this._dispatchEvent('geo-select-valid', out);
+        // this.set('geoValid', false);
+        return out;
+      }
+			
+		}
+				
+    window.customElements.define(GeoSelect.is, GeoSelect);
+  </script>
+</dom-module>

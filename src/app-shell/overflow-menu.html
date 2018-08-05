@@ -1,0 +1,57 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<!-- state -->
+<link rel="import" href="/src/app-state/state-app-data.html">
+<link rel="import" href="/src/app-state/state-route.html">
+
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="/src/custom-styles/icon-imports.html">
+
+<link rel="import" href="/bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-menu-button/paper-menu-button.html">
+
+<link rel="import" href="shell-styles.html">
+<link rel="import" href="overflow-menu-content.html">
+
+<dom-module id="overflow-menu">
+  <template>
+
+		<style></style>
+		<!---->
+		<paper-menu-button dynamic-align
+											 vertical-offset="42"
+											 horizontal-offset="42"
+											 vertical-align="top"
+											 horizontal-align="right"
+                       >
+                       
+      <paper-icon-button slot="dropdown-trigger" icon="more-vert"></paper-icon-button>
+      
+      <overflow-menu-content slot="dropdown-content"></overflow-menu-content>
+      
+    </paper-menu-button>
+		
+  </template>
+
+  <script>
+    class OverflowMenu extends Polymer.Element {
+      static get is() { return 'overflow-menu'; }
+
+      constructor() {
+        super();
+      }
+
+			ready() {
+        super.ready();
+				//console.log('Component Ready');
+			}
+			
+    }
+
+    window.customElements.define(OverflowMenu.is, OverflowMenu);
+  </script>
+</dom-module>

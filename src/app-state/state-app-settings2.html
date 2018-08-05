@@ -1,0 +1,290 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<link rel="import" href="/bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<link rel="import" href="/bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="/src/app-main/app-methods.html">
+
+<!-- state - ->
+<link rel="import" href="/src/app-state/state-media.html">
+<!---->
+<link rel="import" href="/src/app-state/state-app-views.html">
+<link rel="import" href="/src/app-state/state-user-remote.html">
+<link rel="import" href="/src/app-state/state-user-local.html">
+<link rel="import" href="/src/custom-elements/counties-by-zip/counties-by-state.html">
+
+<dom-module id="state-app-settings">
+  <template>
+		<style></style>
+		<app-localstorage-document xlog xsession-only key="app-settings" data="{{appSettings}}"></app-localstorage-document>
+
+    <counties-by-state counties-by-state="{{countiesByState}}"></counties-by-state>
+    
+    <!-- state - ->
+    <state-media media-type="{{mediaType}}"></state-media>
+    <!---->
+    <state-app-views app-views="{{appViews}}"></state-app-views>
+    <state-user-local user-local="{{userLocal}}"></state-user-local>
+    <!--- ->
+    <state-user-remote user-remote="{{userRemote}}"></state-user-remote>
+    <!---->
+
+    <app-methods id="methods" show-toast event-dispatch></app-methods>
+		
+  </template>
+
+  <script>
+
+    // The purpose of this element is to process app-views incoming as a json file
+    // and fill out and return the entire app-settings object needed and used
+    // by the page views to generate all the page elements.
+    // TLDR: app-views.json => state-app-views => state-app-settings => my-app => dom-repeat(app-views)
+
+    class StateAppSettings extends Polymer.Element {
+      static get is() { return 'state-app-settings'; }
+
+      static get properties() { return {
+				appSettings: {
+					type: Object,
+					notify: true,
+					// observer: '_appSettingsChanged',
+          // computed: '_computeAppSettings(appViews, userLocal)',
+				},
+
+				userLocal: {
+					type: Object,
+					notify: true,
+					// observer: '_userLocalChanged',
+          // computed: '_computeAppLocal(appViews, userLocal)'
+				},
+      }}
+      
+			constructor() {
+				super();
+			}
+			
+			ready() {
+        super.ready();
+        //window.addEventListener('user-action-select', (e) => this.onUserActionSelect(e));
+		  }
+
+      static get observers() {
+        return [
+          // '_updateDatabase(userRemote, appData, appSettings)',
+          // '_initializeDatabase(userRemote, appData, appViews, userSettings, userSettingsOld)',
+          // '_userSettingsStoredChanged(userSettingsStored.*)',
+          // '_computeAppSettings(appViews, userLocal.*)',
+          '_userLocalChanged(userLocal.*)',
+        ]
+      }
+
+			// save(data) {
+				
+			// 	//const timestamp = Date.now(); // new Date().getTime();
+			// 	const methods = this.$.methods;
+				
+			// 	// detail = {method: 'save'|'delete', entity: 'deal'|'bid'|'network', data: {new:'data'}}
+			// 	const method = 'save'; // 'save'|'delete'
+			// 	const entity = 'user-settings'; // 'zip'|'deal'|'bid'|'network'
+			// 	//const data = data;
+			// 	//const timestampedData = { ...data, ...{timestamp: timestamp} };
+			// 	const detail = {
+			// 		method: method,
+			// 		entity: entity,
+			// 		data: data,
+			// 		//data: timestampedData,
+			// 	};
+				
+			// 	methods.method(detail);
+			// }
+			
+      _userLocalChanged(newData, oldData) {
+        // console.log('user-local-old', oldData);
+        // console.log('user-local-new', newData);
+        console.log('user-local-new', newData.value);
+      }
+
+      handleUserLocalChanged(newValue) {
+        // console.log('user-settings-changed', newValue);
+        this.set('userLocal', null);
+        this.set('userLocal', newValue);
+      }
+
+      _computeAppSettings(appViews, userLocal) {
+        // tags: [menu-maker], [list-maker]
+        
+        // console.log('computing app-settings...');
+        // console.log('app-views\n', appViews);
+        // console.log('user-local\n', userLocal);
+        
+        const ready = (appViews && userLocal);
+        if(!ready) return;
+        
+        // console.log('app-views\n', appViews);
+        const views = appViews.views;
+        const items = appViews.items;
+        // console.log('items\n', items);
+        const out = views.reduce((c, v, i, a) => {
+          // console.log('v\n', v);
+          let viewItemsKeys = v['items-keys'] ? v['items-keys'] : []; // array
+          // console.log('view-items-keys\n', viewItemsKeys);
+          // assemble items from keys contained by view
+          let viewItems = viewItemsKeys.reduce((ci, vi, ii, ai) => {
+            // console.log('vi\n', vi);
+            let item = items[vi];
+            item.key = vi; // 'city' // appends item key as a property for later reference at save time
+            item.view = v.name;
+            // console.log('item\n', item);
+            let userLocalSetting = userLocal[vi];
+            // console.log('user-local\n', userLocal);
+            // console.log('vi\n', vi);
+            // console.log('user-local[', vi, ']\n', userLocal[vi]);
+            // console.log('user-local-setting\n', userLocalSetting);
+
+            // substitute 'label' for 'name' in 'menu-selection'
+            // updates left side view of menu-selection with 'label' instead of 'name'
+            // item.key = 'lead-type'
+            // item.value = item.data = 'mortgage'
+            // item.type = 'menu-selection'
+            // userLocalSetting = 'mortgage'
+            
+            // apply menu selection/s
+            if(item.type === 'menu-selection') {
+              // console.log('a\n', a); // app views
+              // console.log('ai\n', ai); // array of item keys
+              // console.log('views\n', views);
+              // console.log('items\n', items);
+              const menus = appViews.menus;
+              // console.log('menus\n', menus);
+              const key = item.key; // 'lead-type'
+              const menu = menus[key];
+              const menuItems = menu.items;
+              // console.log('menu-items\n', menuItems);
+              userLocalSetting = menuItems.reduce((cj, vj, ij, aj) => {
+                return (vj.name === userLocalSetting) ? (cj + vj.label) : cj; // critical matching
+              }, '');
+            }
+
+            // substitute value from settings object
+            if ( item && item.setting ) {
+              // let d = null; // yields chevron-right
+              let d = userLocalSetting ? userLocalSetting : (item.value ? item.value : null);
+              // console.log('user-local-setting', userLocalSetting);
+              // console.log('d', d);
+              item.data = d; // words (shown when both item.value and item.data are set)
+              item.value = d; // chevrons // data does not update
+              // console.log('item', item);
+            }
+
+            return [ ...ci, item ];
+          }, []);
+          v.items = viewItems;
+          return [ ...c, v ];
+        }, []);
+
+        // console.log('app-settings\n', out);
+        
+        // // Force data system to pick up array mutations
+        // // https://www.polymer-project.org/1.0/docs/devguide/model-data#array-mutation
+        // // const array = this.myArray;
+        // // this.myArray = [];
+        // // this.myArray = array;
+        // const array = out;
+        // out = [];
+        // out = array;
+        
+        // this.notifySplices(out);
+        // this.notifySplices('out');
+        // this.notifyPath('out');
+
+        // console.log('app-settings\n', out);
+        // this.set('appSettings', out);
+
+        const data = out;
+        this._dispatchEvent('app-settings-changed', data);
+
+        return out;
+      }
+
+		  _dispatchEvent(name, data) {
+				const n = name;
+				const o = {
+				  bubbles: true,
+					composed: true,
+					detail: data,
+				};
+				//console.log('o\n', o);
+				const d = new CustomEvent(n, o);
+				//console.log('d\n', d);
+				this.dispatchEvent(d);				
+      }
+
+      // _computeAppSettings(appViews, userLocal) {
+      //   // console.log('compute-app-settings');
+      //   // console.log('app-views\n', appViews);
+      //   // console.log('user-local\n', userLocal);
+      //   const ready = appViews && userLocal;
+      //   if(!ready) return;
+        
+      //   const views = appViews.views;
+      //   const items = appViews.items;
+      //   const out = views.reduce((c, v, i, a) => {
+      //     // console.log('v\n', v);
+      //     let viewItemsKeys = v['items-keys'] ? v['items-keys'] : []; // array
+      //     // console.log('view-items-keys\n', viewItemsKeys);
+      //     // assemble items from keys contained by view
+      //     let viewItems = viewItemsKeys.reduce((ci, vi, ii, ai) => {
+      //       let item = items[vi];
+      //       // console.log('item\n', item);
+      //       let userLocalSetting = userLocal[vi];
+      //       if ( item && (item.data === 'settings' || item.data === 'Settings') ) {
+      //         // substitute value from settings object
+      //         item.data = userLocalSetting ? userLocalSetting : (item.value ? item.value : null);
+      //       }
+      //       return [ ...ci, item ];
+      //     }, []);
+      //     v.items = viewItems;
+      //     return [ ...c, v ];
+      //   }, []);
+
+      //   console.log('app-settings\n', out);
+      //   return out;
+      // }
+
+      // saveAppSettings(data) {
+      //   // console.log('data\n',data);
+      //   // // console.log('user-remote\n', this.userRemote);
+      //   // console.log('user-local\n', this.userLocal);
+      //   // console.log('app-settings\n', this.appSettings);
+      //   return;
+      
+      //   // common code below this line
+
+			// 	const entity = 'user-settings';
+				
+			// 	const methods = this.$.methods;
+			// 	// detail = {method: 'save'|'delete', entity: 'deal'|'bid'|'network', data: {new:'data'}}
+			// 	const method = 'save'; // 'save'|'delete'
+			// 	//const entity = 'user-switch'; // 'zip'|'deal'|'bid'|'network'
+			// 	const detail = {
+			// 		method: method,
+			// 		entity: entity,
+			// 		data: data,
+			// 	};
+			// 	// console.log('detail\n', detail);
+			// 	methods.method(detail);
+      // }
+
+      // _appSettingsChanged(newData, oldData) {
+      //   console.log('old-data\n', oldData);
+      //   console.log('new-data\n', newData);
+      //   // this.set('app-settings', newData);
+      // }
+      
+	  }
+
+    window.customElements.define(StateAppSettings.is, StateAppSettings);
+  </script>
+</dom-module>

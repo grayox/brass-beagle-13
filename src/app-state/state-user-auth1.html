@@ -1,0 +1,192 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<link rel="import" href="/bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<link rel="import" href="/bower_components/polymerfire/polymerfire.html">
+
+<!-- state -->
+<!--- ->
+<link rel="import" href="state-user-remote.html">
+<link rel="import" href="state-user-local.html">
+<!---->
+<link rel="import" href="/src/app-main/app-methods.html">
+<link rel="import" href="/src/app-state/state-app-data.html">
+
+<dom-module id="state-user-auth1">
+  <template>
+		<style></style>
+		<!---->
+		<app-localstorage-document xlog xsession-only xkey="user-logged-in" xdata="{{userLoggedIn}}" ></app-localstorage-document>
+		<app-localstorage-document xlog xsession-only xkey="user-remote"    xdata="{{userRemote}}"   ></app-localstorage-document>
+		<app-localstorage-document xlog xsession-only xkey="auth-provider"  xdata="{{authProvider}}" ></app-localstorage-document>
+		
+    <!--- ->
+    <!-- Do not include firebase-app here to avoid multiple instances - ->
+		<firebase-app name="app"
+									auth-domain="green-comet-e2c85.firebaseapp.com"
+									database-url="green-comet-e2c85.firebaseio.com"
+									api-key="AIzaSyAOEXILaYcxjmJsJ81_WfubS_h3AQ3lLdA"
+									>
+		</firebase-app>
+		<!---->
+		<firebase-auth id="auth"
+									 app-name="app"
+									 xlog verbose
+									 user="{{userRemote}}"
+									 provider="{{authProvider}}"
+                   signed-in="{{userLoggedIn}}"
+									 on-error="_handleError"
+									 >
+    </firebase-auth>
+    <app-methods id="methods"></app-methods>
+    <state-app-data app-data="{{appData}}"></state-app-data>
+		<!---->
+		
+  </template>
+
+  <script>
+    class StateUserAuth1 extends Polymer.Element {
+      static get is() { return 'state-user-auth1'; }
+
+      static get properties() { return {
+				
+        userLoggedIn: {
+					type: Boolean,
+					notify: true,
+					//observer: '_userLoggedInChanged',
+					value: () => false,
+				},
+
+				authProvider: {
+					// provider signal is only sent upon login event
+					type: String,
+					notify: true,
+				},
+
+				userRemote: {
+					type: Object,
+					notify: true,
+					observer: '_userRemoteChanged',
+				},
+
+				appData: {
+					type: Object,
+					notify: true,
+					observer: '_appDataChanged',
+				},
+
+			}}
+			
+			constructor() {
+				super();
+			}
+			
+			ready() {
+        super.ready();
+        //window.addEventListener('user-action-select', (e) => this.onUserActionSelect(e));
+        //window.addEventListener('item-method', () => this._itemMethod());
+        window.addEventListener('login'  , e => this.login (e) );
+        window.addEventListener('logout' , e => this.logout(e) );
+      }
+
+			login(e) {
+				//console.log('e\n', e);
+				const authProvider = e.detail;
+				this.set('authProvider', authProvider);
+				const auth = this.$.auth;
+				//const _this = this;
+				auth.signInWithPopup(authProvider)
+					.then(response => {
+					
+						//console.log('response\n', response);
+						//console.log('userLoggedIn\n', auth.signedIn);
+						//this.set('userLoggedIn', auth.signedIn);
+						//console.log('userLoggedIn\n', this.userLoggedIn); // true|false
+						//console.log('user\n', auth.user);
+					  //console.log('user\n', this.userRemote); // object
+						//this.fire('logged-in', response);
+			
+			      // Upon login, user must do the following:
+			      // 1. Save user-remote object to database (=> use app.method: save entity)
+            // this._save(response.user)
+            //   .then(r => {
+            //     console.log('r\n', r);
+            //   });
+			      // 2. Obtain current user state
+			      // 3. Archive snapshot of current user state
+			      // 4. Make current user state available to other web components (=> use state element)
+						
+				  }).catch(error => {
+				    //console.log('error\n', error);
+				    console.error(error.code, error.message);
+				});
+      }
+      
+      signOut(e) {
+        this.logout(e);
+      }
+
+			logout(e) {
+				const auth = this.$.auth;
+				//const _this = this;
+				auth.signOut()
+						.then(response => {
+							//console.log('auth.signedIn\n', auth.signedIn);
+							//console.log('userLoggedIn\n', this.userLoggedIn);
+							//this.set('userLoggedIn', auth.signedIn);
+							//this.set('userLoggedIn', false);
+						})
+						.catch(error => {
+							//console.log('error\n', error);
+							console.error(error.code, error.message);
+						});
+			}
+			
+			_handleError(e) {
+				// console.log('error message:\n', e);
+      }
+
+      _appDataChanged(newData, oldData) {
+        // console.log('app-data-old\n', oldData);
+        // console.log('app-data-new\n', newData);
+
+        if(newData && this.userRemote) this._userRemoteChanged(this.userRemote);
+      }
+      
+      _userRemoteChanged(newData, oldData) {
+        // console.log('user-data-old\n', oldData);
+        // console.log('user-data-new\n', newData);
+
+        if(!this.appData) return;
+
+        const userLoggedIn = this.userLoggedIn;
+        if(oldData && !newData && userLoggedIn) {
+          this.set('userRemote', oldData);
+        } else if(!oldData && newData && userLoggedIn) {
+          this._save(newData);
+        }
+        return;
+      }
+
+      _save(r) {
+        //console.log('save-data\n', r);
+        const methody = 'save'; // 'save'|'delete'
+        const entity = 'user-remote'; // 'user-remote', 'xuser-local'|'deal'|'bid'|'network'
+        const methods = this.$.methods;
+        const data = {
+          method: methody,
+          entity: entity,
+          data: r,
+        }
+        // delete data.doc;
+        // delete data.r;
+        // console.log('saving-data\n', data);
+        methods.method(data);
+      }
+     
+		}
+
+    window.customElements.define(StateUserAuth1.is, StateUserAuth1);
+  </script>
+</dom-module>

@@ -1,0 +1,716 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="/src/custom-styles/split-screen-styles.html">
+<link rel="import" href="/src/custom-styles/split-screen-animation.html">
+
+<link rel="import" href="/src/app-main/app-methods.html">
+<!-- state -->
+<link rel="import" href="/src/app-state/state-media.html">
+<link rel="import" href="/src/app-state/state-user-local.html">
+<!---->
+<!---->
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="/src/app-view/app-item.html">
+<link rel="import" href="/src/custom-elements/animated-css.html">
+<link rel="import" href="view-settings-list.html">
+<link rel="import" href="view-settings-detail.html">
+
+<dom-module id="view-settings">
+  <template>
+
+    <style include="split-screen-styles split-screen-animation">
+    
+      paper-icon-button {
+        text-align: left;
+      }
+
+    </style>
+		
+		<!-- v.3 | css-grid layout, responsive, two columns -->
+
+    <!--- ->
+    <!-- state -->
+    <state-media media-type="{{mediaType}}"></state-media>
+    <state-user-local user-local="{{userLocal}}"></state-user-local>
+    <!--- ->
+    <app-methods id="methods" show-toast event-dispatch
+                 on-method-success="_onMethodSuccess"
+                 >
+    </app-methods>
+    <!---->
+
+    <!-- desktop, tablet -->
+    <template restamp is="dom-if" if="[[_computeShowSplit(mediaType)]]">
+      <div class="wrapper split">
+        <view-settings-list id="list-desktop"
+                            xselected="{{selected}}"
+                            selected="{{selectedList}}"
+                            xuser-local="[[userLocal]]"
+                            geo-select-location-region="[[userLocal.geo-select-location-region]]"
+                            lead-type="[[userLocal.lead-type]]"
+                            xon-tap="_showDetailDesktop"
+                            on-selected-changed="_showDetailDesktop"
+                            xon-selected-item-changed="_showDetailDesktop"
+                            >
+        </view-settings-list>
+        <animated-css id="animated-detail-desktop"
+                      entry-animation="slideInLeft"
+                      exit-animation="slideOutLeft"
+                      on-animation-end="_onAnimationEnd"
+                      xlast-animation-type="{{lastAnimationType}}"
+                      xlast-animation-name="{{lastAnimationName}}"
+                      show
+                      >
+          <view-settings-detail xselected="[[selected]]"
+                                selected="[[selectedDetail]]"
+                                user-local="[[userLocal]]"
+                                xon-app-settings-changed="_onAppSettingsChanged"
+                                on-user-settings-changed="_onUserSettingsChanged"
+                                >
+          </view-settings-detail>
+        </animated-css>
+      </div>
+    </template>
+
+    <!-- with animation and without iron pages -->
+    <!-- mobile -->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="animated-pages-wrapper">
+       
+        <!-- view-settings-list -->
+        <animated-css id="animated-list-mobile"
+                      entry-animation="slideInLeft"
+                      exit-animation="slideOutLeft"
+                      show
+                      >
+          <div name="list" xon-tap="_showDetailMobile">
+            <view-settings-list selected="{{selected}}"
+                                xuser-local="[[userLocal]]"
+                                geo-select-location-region="[[userLocal.geo-select-location-region]]"
+                                lead-type="[[userLocal.lead-type]]"
+                                xon-tap="_showDetailMobile"
+                                on-selected-changed="_showDetailMobile"
+                                xon-selected-item-changed="_showDetailMobile"
+                                >
+            </view-settings-list>
+          </div>      
+        </animated-css>
+
+        <!-- view-settings-detail -->
+        <div name="detail" id="detail">
+          <animated-css id="animated-detail-mobile"
+                        entry-animation="slideInRight"
+                        exit-animation="slideOutRight"
+                        xhidden
+                        >
+            <!--- ->
+            <paper-icon-button icon="arrow-back" on-tap="_resetList"></paper-icon-button>
+            <!---->
+            <app-item type="subpage-header"
+                      on-subpage-back-button="_showListMobile"
+                      xlabel="[[selected]]"
+                      label="Return to menu"
+                      >
+            </app-item>
+            <!---->
+            <view-settings-detail selected="[[selected]]"
+                                  user-local="[[userLocal]]"
+                                  xon-app-settings-changed="_onAppSettingsChanged"
+                                  on-user-settings-changed="_onUserSettingsChanged"
+                                  >
+            </view-settings-detail>
+          </animated-css>
+        </div>         
+        <!---->
+        <!---->      
+  
+      </div>
+    </template>
+    <!---->
+
+    <!-- with animation and with iron pages -->
+    <!-- mobile - ->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="wrapper">
+        <iron-pages selected="{{subroute}}"
+                    attr-for-selected="name"
+                    fallback-selection="list"
+                    >
+
+          <!-- view-settings-list - /->
+          <div name="list" on-tap="_showDetailMobile">
+            <animated-css id="animated-list-mobile">
+              <view-settings-list selected="{{selected}}"
+                                  xuser-local="[[userLocal]]"
+                                  geo-select-location-region="[[userLocal.geo-select-location-region]]"
+                                  lead-type="[[userLocal.lead-type]]"
+                                  >
+              </view-settings-list>
+            </animated-css>
+          </div>      
+
+          <!-- view-settings-detail - /->
+          <div name="detail">
+            <animated-css id="animated-detail-mobile">
+              <!--- ->
+              <paper-icon-button icon="arrow-back" on-tap="_resetList"></paper-icon-button>
+              <!--- /->
+              <app-item type="subpage-header"
+                        on-subpage-back-button="_showListMobile"
+                        label="[[selected]]"
+                        >
+              </app-item>
+              <view-settings-detail selected="[[selected]]"
+                                    user-local="[[userLocal]]"
+                                    xon-app-settings-changed="_onAppSettingsChanged"
+                                    on-user-settings-changed="_onUserSettingsChanged"
+                                    >
+              </view-settings-detail>
+            </animated-css>
+          </div>         
+          <!--- /->
+          <!--- /->      
+        </iron-pages>
+      </div>
+    </template>
+    <!---->
+
+    <!-- without animation (working) - ->
+    <!-- mobile - ->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="wrapper">
+        <iron-pages selected="{{subroute}}"
+                    attr-for-selected="name"
+                    fallback-selection="list"
+                    >
+
+          <!-- view-settings-list - ->
+          <div name="list" on-tap="_showDetailMobile">
+            <view-settings-list selected="{{selected}}"
+                                xuser-local="[[userLocal]]"
+                                geo-select-location-region="[[userLocal.geo-select-location-region]]"
+                                lead-type="[[userLocal.lead-type]]"
+                                >
+            </view-settings-list>
+          </div>      
+
+          <!-- view-settings-detail - ->
+          <div name="detail">
+            <!--- ->
+            <paper-icon-button icon="arrow-back" on-tap="_resetList"></paper-icon-button>
+            <!--- ->
+            <app-item type="subpage-header"
+                      on-subpage-back-button="_showListMobile"
+                      label="[[selected]]"
+                      >
+            </app-item>
+            <view-settings-detail selected="[[selected]]"
+                                  user-local="[[userLocal]]"
+                                  xon-app-settings-changed="_onAppSettingsChanged"
+                                  on-user-settings-changed="_onUserSettingsChanged"
+                                  >
+            </view-settings-detail>
+          </div>         
+          <!--- ->
+          <!--- ->      
+        </iron-pages>
+      </div>
+    </template>
+    <!---->
+
+    <!--- ->
+    <template restamp is="dom-if" if="[[!_computeShowSplit(mediaType)]]">
+      <div class="wrapper">
+        <view-settings-list selected="{{selected}}"
+                            xuser-local="[[userLocal]]"
+                            geo-select-location-region="[[userLocal.geo-select-location-region]]"
+                            lead-type="[[userLocal.lead-type]]"
+                            on-tap="_dialogOpen"
+                            >
+        </view-settings-list>
+      </div>
+
+      <paper-dialog id="dialog" modal>
+        <h2>
+          Header
+          <paper-icon-button icon="left-arrow" on-tap="_dialogClose"></paper-icon-button>
+        </h2>
+        <paper-dialog-scrollable>
+          <view-settings-detail selected="[[selected]]"
+                                user-local="[[userLocal]]"
+                                xon-app-settings-changed="_onAppSettingsChanged"
+                                on-user-settings-changed="_onUserSettingsChanged"
+                                >
+          </view-settings-detail>
+        </paper-dialog-scrollable>
+        <!--- ->
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus>Accept</paper-button>
+        </div>
+        <!--- /->
+      </paper-dialog>
+      <!--- ->
+    </template>
+    <!---->
+    
+  </template>
+
+  <script>
+    class ViewSettings extends Polymer.Element {
+      
+			static get is() { return 'view-settings'; }
+			
+      static get properties() { return {
+				
+				mediaType: {
+					type: String, // 'mobile' | 'tablet' | 'desktop'
+					notify: true,
+				},
+				
+				// _split: {
+				// 	type: Boolean,
+				// 	notify: true,
+				// 	computed: '_computeSplit(mediaType)',
+				// },
+
+				selectedList: {
+					type: String,
+          notify: true,
+          observer: '_selectedListChanged',
+				},
+
+				selectedDetail: {
+					type: String,
+					notify: true,
+				},
+
+				selected: {
+					type: String,
+					notify: true,
+				},
+
+				label: {
+					type: String,
+          notify: true,
+          computed: '_computeLabel(selected)',
+				},
+    
+				// subroute: {
+				// 	type: String,
+        //   notify: true,
+        //   value: () => 'list', // 'list' | 'detail'
+				// },
+    
+        userLocal: {
+      		type: Object,
+					notify: true,
+          // observer: '_userLocalChanged',
+        },
+
+				// settings: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	computed: '_computeSettings(settingsZip, settinsSwitch, settingsInput)',
+				// },
+				
+				// settingsZip: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// 	value: () => ({}),
+				// },
+				
+				// settingsSwitch: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	value: () => ({}),
+				// 	//computed: '_computeSplit(mediaType)',
+				// },		
+				
+				// settingsInput: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// 	value: () => ({}),
+				// },
+				
+				// settingsInvite: {
+				// 	type: Object,
+				// 	notify: true,
+				// 	//computed: '_computeSplit(mediaType)',
+				// },
+				
+			}}
+			
+			constructor() {
+				super();
+			}
+
+			ready() {
+        super.ready();
+        // //window.addEventListener('user-action-select', (e) => this.onUserActionSelect(e));
+        // window.addEventListener( 'update-user-zip'    , e => this._onUpdateUserZip(e)    );
+        // window.addEventListener( 'update-user-switch' , e => this._onUpdateUserSwitch(e) );
+        // window.addEventListener( 'update-user-input'  , e => this._onUpdateUserInput(e)  );
+        // //window.addEventListener( 'update-user-invite' , (e) => this._onUpdateUserInvite(e) ); // no need to save prior invitations to settings
+        // window.addEventListener( 'lead-type-selected'  , e => this._handleLeadTypeSelected(e)  ); // doing this at this level causes other elements to "double save"
+        // window.addEventListener( 'geo-select-valid'    , e => this._handleGeoSelectValid  (e)  ); // doing this at this level causes other elements to "double save"
+		  }
+			
+			// connectedCallback() {
+			// 	super.connectedCallback();
+			// 	window.addEventListener('updateuserzip', (e) => this.onUpdateUserZip(e));
+			// }
+
+			// disconnectedCallback() {
+			// 	super.disconnectedCallback();
+			// 	window.removeEventListener('updateuserzip', (e) => this.onUpdateUserZip(e));
+			// }
+			
+			// static get observers() {
+			// 	return [
+			// 		'_computeSettings(settingsZip.*, settinsSwitch.*, settingsInput.*)',
+			// 	]
+			// }
+			
+			// _computeSplit(s) {
+      _computeShowSplit(s) {
+				return s !== 'mobile';
+      }  
+      
+      _computeLabel(s) {
+
+      }
+
+      // _userLocalChanged(dataNew, dataOld) {
+      //   // console.log('data-old\n', dataOld);
+      //   // console.log('data-new\n', dataNew);
+
+      //   const ready = dataNew;
+      //   if(!ready) return;
+
+      //   const userLocal = dataNew; //dataNew.value; // dataNew.base
+      //   this.set('userLocal', userLocal);
+        
+      //   // console.log('user-local\n', userLocal);
+
+      //   // this.set('leadType', userLocal['lead-type']);
+      //   // console.log('lead-type\n', this.leadType);
+
+      //   // const leadType = userLocal['lead-type'];
+      //   // console.log('lead-type\n', leadType);
+      // }
+
+      // _onAppSettingsChanged(e) {
+      _onUserSettingsChanged(e) {
+        // console.log('e\n', e);
+
+        // reference: https://www.polymer-project.org/1.0/docs/devguide/model-data
+        // Force data system to pick up subproperty changes
+        const userLocal = this.userLocal;
+        this.userLocal = {};
+        this.userLocal = userLocal;
+
+        // this.set('userLocal', e); // error: do not use
+      }
+
+      // begin: event save
+
+      // _handleLeadTypeSelected(e) { this._updateSettings('lead-type'  , e.detail); } // first arg must match datastore key, bc typeof data === 'string'
+      // _handleGeoSelectValid  (e) { this._updateSettings('geo-select' , e.detail); }
+
+      // _updateSettings(s, data) {
+      //   console.log(s, '\n', s);
+      //   console.log(data, '\n', data);
+
+      //   let o = {};
+      //   const dataType = typeof data;
+
+      //   switch(dataType) {
+      //     case 'string':
+      //       o[s] = data;
+      //       break;
+      //     case 'object':
+      //       o = data;
+      //       break;
+      //     default:
+      //       console.error('Data provided does not match available types');
+      //       return;
+      //   }
+
+      //   const updatedData = Object.assign( this.userLocal, o );
+      //   // console.log('updated-data\n', updatedData);
+      //   // this._dispatchEvent('app-settings-changed', updatedData);
+      //   this.save(updatedData);
+      // }
+
+		  // _dispatchEvent(name, data) {
+			// 	const n = name;
+			// 	const o = {
+			// 	  bubbles: true,
+			// 		composed: true,
+			// 		detail: data,
+			// 	};
+			// 	//console.log('o\n', o);
+			// 	const d = new CustomEvent(n, o);
+			// 	//console.log('d\n', d);
+			// 	this.dispatchEvent(d);				
+      // }
+
+			// save(data) {
+				
+			// 	const timestamp = Date.now(); // new Date().getTime();
+			// 	const methods = this.$.methods;
+				
+			// 	// detail = {method: 'save'|'delete', entity: 'deal'|'bid'|'network', data: {new:'data'}}
+			// 	const method = 'save'; // 'save'|'delete'
+			// 	const entity = 'user-settings'; // 'zip'|'deal'|'bid'|'network'
+			// 	//const data = data;
+			// 	const timestampedData = { ...data, ...{timestamp: timestamp} };
+			// 	const detail = {
+			// 		method: method,
+			// 		entity: entity,
+			// 		// data: data,
+			// 		data: timestampedData,
+			// 	};
+				
+			// 	methods.method(detail);
+      // }
+      
+      // _onMethodSuccess(e) {
+      //   // console.log('method-success\n', e.detail);
+
+      //   // https://www.polymer-project.org/1.0/docs/devguide/model-data#override-dirty-check
+      //   // Force data system to pick up subproperty changes
+      //   var userLocal = this.userLocal;
+      //   this.userLocal = {};
+      //   this.userLocal = userLocal;
+      // }
+
+      // end: event save
+			
+			// _computeSettings(sZip, sSwitch, sInput) {
+			// 	const out = {};
+				
+			// 	if(sZip    === undefined) { sZip    = {} }
+			// 	if(sSwitch === undefined) { sSwitch = {} }
+			// 	if(sInput  === undefined) { sInput  = {} }
+				
+			// 	out.zip = sZip;
+			// 	out.switch = sSwitch;
+			// 	out.input = sInput;
+			// 	console.log('settings\n', out);
+			// 	return out;
+			// }
+			
+			// _onUpdateUserZip(e) {
+			// 	console.log('on-update-user-zip\n', e);
+			// 	const data = e.detail;
+			// 	this.set('settingsZip', data);
+			// 	console.log('settings-zip\n', this.settingsZip);
+				
+			// 	const settings = this.settings;
+			// 	console.log('settings\n', settings);
+			// 	this.save(settings);
+			// }
+			
+			// _onUpdateUserSwitch(e) {
+			// 	//console.log('on-update-user-switch\n', e); // {detail: {data: true, label: 'home'|'mortgage'|...}}
+			// 	const data = e.detail;
+			// 	if(!this.settingsSwitch) {
+			// 		this.set('settingsSwitch', {});
+			// 	}
+			// 	this.set(['settingsSwitch', data.label], data.data);
+			// 	console.log('settings-switch\n', this.settingsSwitch); // {data: true, label: 'home'|'mortgage'|...}
+				
+			// 	//const settings = this.settings;
+			// 	const settings = this._computeSettings(this.settingsZip, this.settingsSwitch, this.settingsInput);
+			// 	console.log('settings\n', settings);
+			// 	this.save(settings);
+			// }
+			
+			// _onUpdateUserInput(e) {
+			// 	//console.log('on-update-user-input\n', e); // {detail: {data: 'somestring', label: 'text'|'email'}}
+			// 	const data = e.detail;
+			// 	if(!this.settingsInput) {
+			// 		this.set('settingsInput', {});
+			// 	}
+			// 	this.set(['settingsInput', data.label1], data.data);
+			// 	//console.log('settings-input\n', this.settingsInput); // {data: 'somestring', label: 'text'|'email'}
+				
+			// 	const settings = this.settings;
+			// 	console.log('settings\n', settings);
+			// 	this.save(settings);
+			// }
+			
+			// _onUpdateUserInvite(e) { // no need to save prior invitations to settings
+			// 	//console.log('on-update-user-invite\n', e); // {detail: {data: 'somestring', label: 'contact'}}
+			// 	const data = e.detail;
+			// 	this.set('settingsInvite', {});
+			// 	this.set('settingsInvite[label]', data);
+			// 	console.log('settings-invite\n', this.settingsInvite); // {data: 'somestring', label: 'contact'}
+      // }
+      
+      // _dialogOpen() {
+      //   this.root.querySelector('#dialog').opened = true;
+      // }
+      
+      // _dialogClose() {
+      //   this.root.querySelector('#dialog').opened = false;
+      // }
+
+      // * * * * * start: animations * * * * *
+
+      _selectedListChanged(dataNew, dataOld) {
+        // log to verify
+        // console.log('data-old', dataOld);
+        // console.log('data-new', dataNew);
+
+        // define variables
+        const detail = this.root.querySelector('#animated-detail-desktop'); // element to animate
+        
+        // check for old value
+        if(dataOld) {
+          // animate old selectedDetail exit
+          detail.animateExit(); // wait for on-animation-end to proceed
+        } else {
+          // hide to do machinations behind-the-scenes
+          // detail.hidden = true;
+
+          // set new selectedDetail
+          this.set('selectedDetail', dataNew);
+
+          // animate new selectedDetail entry
+          detail.animateEntry();
+
+          // unhide to show animations
+          // detail.hidden = false;
+        }
+      }
+
+      _onAnimationEnd(e) {
+        // console.log('on-animation-end', e);
+        // console.log('detail', e.detail); // slideInLeft
+        // console.log('type'  , e.type  ); // animation-end
+     
+        // define variables
+        const detail = this.root.querySelector('#animated-detail-desktop'); // element to animate
+        // const lastAnimationType = detail.lastAnimationType;
+        // const lastAnimationType = this.lastAnimationType;
+        // const lastAnimationName = this.lastAnimationName;
+        // console.log('last-animation-type', lastAnimationType);
+        
+        // return if entry-animation just ended (to avoid infinite loop)
+        // if(lastAnimationType !== 'exit') {
+        //   return;
+        // }
+        
+        // otherwise, the last animation type was an 'exit',
+        // so now proceed to implement the next 'entry' animation
+        // console.log('last-animation-name', lastAnimationName);
+
+        // this.set('selectedDetail', dataNew);
+        
+        // wait for promise to return or no element
+        
+        // hide to do machinations behind-the-scenes
+        // detail.hidden = true;
+
+        // set new selectedDetail
+        const selectedList = this.selectedList;
+        this.set('selectedDetail', selectedList);
+
+        // animate new selectedDetail entry
+        detail.animateEntry();
+        
+        // unhide to show animations
+        // detail.hidden = false;
+          
+        this._scrollIntoView();
+
+      }
+    
+      _scrollIntoView() {
+        // auto scroll to top of page, with animation
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+        const top = document.body;
+        top.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start', // 'end', 
+          inline: 'nearest', // 'end', // 'start', //
+        });
+
+        // https://api.jquery.com/scrollTop/
+        // $('#top').scrollTop();
+        // $(window).scrollTop();
+      }
+
+      _showDetailDesktop() {
+        // delete this section when not using <iron-list> e.g., dashboard, settings
+        // const ready = !!this.selectedItem;
+        // if(!ready) return;
+        
+        const detail = this.root.querySelector('#animated-detail-desktop');
+        if(!detail) return;
+
+       //detail.animateExit();
+        detail.animateEntry();
+      }
+
+      _showDetailMobile() {
+        // delete this section when not using <iron-list> e.g., dashboard, settings
+        // const ready = !!this.selectedItem;
+        // if(!ready) return;
+        
+        // this.set('subroute', 'detail');
+
+        const list = this.root.querySelector('#animated-list-mobile');
+        // list.animation = 'slideOutLeft';
+        if(list) list.animateExit();
+
+        const detail = this.root.querySelector('#animated-detail-mobile');
+        // detail.hidden = false;
+        // detail.animation = 'slideInRight';
+        if(detail) detail.animateEntry();
+      }
+      
+      _showListMobile() {
+        // this.set('subroute', 'list');
+
+        const list = this.root.querySelector('#animated-list-mobile');
+        // list.animation = 'slideInLeft';
+        list.animateEntry();
+
+        const detail = this.root.querySelector('#animated-detail-mobile');
+        // detail.animation = 'slideOutRight';
+        detail.animateExit();
+      }
+
+      // _afterShowList() {
+      //   const list = this.root.querySelector('#animated-list-mobile');
+      //   list.hidden = false;
+
+      //   const detail = this.root.querySelector('#animated-detail-mobile');
+      //   detail.hidden = true;
+      // }
+
+      // _afterShowList() {
+      //   const list = this.root.querySelector('#animated-list-mobile');
+      //   list.hidden = true;
+
+      //   const detail = this.root.querySelector('#animated-detail-mobile');
+      //   detail.hidden = false;
+      // }
+
+      // * * * * * end: animations * * * * *
+			
+    }
+
+    window.customElements.define(ViewSettings.is, ViewSettings);
+  </script>
+
+</dom-module>
